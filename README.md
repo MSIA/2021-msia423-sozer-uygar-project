@@ -1,3 +1,9 @@
+Author: Uygar Sozer
+
+QA Partner: Isaac Choi
+
+<!-- toc -->
+
 # MSiA423 Template Repository
 
 <!-- toc -->
