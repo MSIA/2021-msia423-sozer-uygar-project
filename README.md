@@ -27,13 +27,18 @@ continue adding more ingredients on their search bar, which might start going in
 and the app will adjust the predictions and the shopping lists accordingly.
 
 In developing this app, I will create a predictive model that assigns a cuisine label to a list
-of ingredients. [The training dataset](https://www.kaggle.com/kaggle/recipe-ingredients-dataset)
-contains 40,000 ingredient lists, each labeled with 1 of 20 different cuisines. As the user
-inputs the ingredients they are interested in, the model will generate predictions. I will remove
+of ingredients. As the user inputs the ingredients they are interested in, the model will 
+generate predictions. I will remove
 basic ingredients such as salt, cooking oil, flour etc. that show up in practically any cuisine
 to improve precision. Then, for the grocery lists, the app will use a separate model to compute
 item associations for each cuisine and display the most highly associated items to the input list
 underneath each of the 3 cuisines predicted.
+
+Data sources:
+* [Yummly dataset](https://www.kaggle.com/kaggle/recipe-ingredients-dataset) - 
+contains 40,000 ingredient lists, each labeled with 1 of 20 different cuisines
+* [Dataset by Dominik Schmidt](https://dominikschmidt.xyz/simplified-recipes-1M/) -
+over 1M unlabeled recipes for market basket analysis
 
 ## Success criteria
 
