@@ -26,6 +26,30 @@ and tries to complete a basic *shopping list* for you for each of those cuisines
 continue adding more ingredients on their search bar, which might start going in another direction,
 and the app will adjust the predictions and the shopping lists accordingly.
 
+In developing this app, I will create a predictive model that assigns a cuisine label to a list
+of ingredients. [The training dataset](https://www.kaggle.com/kaggle/recipe-ingredients-dataset)
+contains 40,000 ingredient lists, each labeled with 1 of 20 different cuisines. As the user
+inputs the ingredients they are interested in, the model will generate predictions. I will remove
+basic ingredients such as salt, cooking oil, flour etc. that show up in practically any cuisine
+to improve precision. Then, for the grocery lists, the app will use a separate model to compute
+item associations for each cuisine and display the most highly associated items to the input list
+underneath each of the 3 cuisines predicted.
+
+## Success criteria
+
+**Model performance**:
+* Prior to deployment, the predictive model should have a **cross-validation accuracy** (predicting the
+right cuisine within the top 3 most likely cuisines) **of more than 70%**.
+
+**Business metrics**:
+
+* Monthly unique user count, and user retention
+(the user returned to the app within 2 weeks)
+* Positive explicit feedback randomly solicited from the user 
+(the user clicked upvote on one or more of the predictions)
+* In the future, when we add recipe links to cuisines, promising clickstream data (the user followed
+the link to the recipe provided)
+
 ---
 
 # Repository
