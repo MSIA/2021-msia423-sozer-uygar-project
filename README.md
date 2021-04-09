@@ -1,10 +1,34 @@
+# MSiA 423 Project - CuisineHelper
+
 Author: Uygar Sozer
 
 QA Partner: Isaac Choi
 
-<!-- toc -->
+## Vision
 
-# MSiA423 Template Repository
+Home chefs at all levels, from beginner to pro, know that it is difficult to get inspiration to
+break out of the comfort zone of a few basic dishes and cuisines. Discovering new cuisines could
+be surprisingly challenging if you can't dedicate time to go recipe surfing, especially when you
+come home tired and hungry!
+
+In reality, even if you never cooked Thai or Indian food yourself, a lot of world cuisines start
+with mostly the same ingredients. You would only need to pick up a few other ingredients on
+your next grocery store visit to make a delicious Indian curry. Maybe beginner cooks wouldn't be
+so intimidated to explore more if there was a robust source they could pick up inspiration from.
+CuisineHelper aims to solve some of these issues by simplifying the planning process of cooking,
+as well as making recommendations for new styles of cooking we think the user is interested in.
+
+## Mission
+
+The app will ask the user to enter a few ingredients on a search bar. After 3 ingredients, the
+app will display a few different cuisines underneath that would make use of those ingredients,
+and tries to complete a basic *shopping list* for you for each of those cuisines. The user can
+continue adding more ingredients on their search bar, which might start going in another direction,
+and the app will adjust the predictions and the shopping lists accordingly.
+
+---
+
+# Repository
 
 <!-- toc -->
 
