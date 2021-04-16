@@ -6,8 +6,7 @@ QA Partner: Isaac Choi
 
 ## Vision
 
-Home chefs at all levels, from beginner to pro, know that it is difficult to get inspiration to
-break out of the comfort zone of a few basic dishes and cuisines. Discovering new cuisines could
+Home chefs at all levels, from beginner to pro, know that it is difficult to get inspiration to break out of the comfort zone of a few basic dishes and cuisines. Discovering new cuisines could
 be surprisingly challenging if you can't dedicate time to go recipe surfing, especially when you
 come home tired and hungry!
 
