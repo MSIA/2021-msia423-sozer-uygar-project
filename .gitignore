@@ -4,6 +4,7 @@ __pycache__/
 *.class
 .DS_Store
 .idea/
+.vscode
 .log
 .ipynb_checkpoints/
 
