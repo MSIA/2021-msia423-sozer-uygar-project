@@ -7,7 +7,7 @@ __pycache__/
 .vscode
 .log
 .ipynb_checkpoints/
-
+.vscode/
 
 data/*
 !data/sample/
