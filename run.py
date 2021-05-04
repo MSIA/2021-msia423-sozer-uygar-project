@@ -9,7 +9,7 @@ if __name__ == "__main__":
     parser.add_argument("BUCKETNAME", help = "Name of S3 bucket")
     parser.add_argument("FILENAME", help = "File name (key)")
     
-    parser.add_argument("-d", "--DATAPATH", default="data/external/train.json", \
+    parser.add_argument("-d", "--DATAPATH", default="data/train.json", \
                                             help = "Custom path to file", \
                                             metavar= "") 
 
