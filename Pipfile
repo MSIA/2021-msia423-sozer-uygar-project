@@ -16,4 +16,4 @@ boto3 = "*"
 awscli = "*"
 
 [requires]
-python_version = "3.9"
+python_version = "3"
