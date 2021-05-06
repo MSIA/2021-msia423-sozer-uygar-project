@@ -2,6 +2,7 @@ import argparse
 from pathlib import Path
 
 from src.upload_data import upload
+from src.data_model import create_db
 
 
 if __name__ == "__main__":
@@ -16,3 +17,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     upload(args.BUCKETNAME, args.FILENAME, args.DATAPATH)
+    create_db()
