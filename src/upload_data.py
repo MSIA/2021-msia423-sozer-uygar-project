@@ -19,6 +19,7 @@ def upload(bucketname, filename, datapath):
     # Upload file to S3
     try:
         bucket.upload_file(datapath, filename)
+        logger.info("Successfully uploaded file")
     except boto3.exceptions.S3UploadFailedError:
         logger.error("Bucket does not exist")
     except FileNotFoundError:
