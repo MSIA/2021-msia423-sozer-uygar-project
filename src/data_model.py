@@ -1,16 +1,6 @@
-import os
-
 import sqlalchemy
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String, ForeignKey
-
-conn_type = "mysql+pymysql"
-user = os.environ.get("MYSQL_USER")
-password = os.environ.get("MYSQL_PASSWORD")
-host = os.environ.get("MYSQL_HOST")
-port = os.environ.get("MYSQL_PORT")
-database = os.environ.get("DATABASE_NAME")
-engine_string = "{}://{}:{}@{}:{}/{}".format(conn_type, user, password, host, port, database)
 
 Base = declarative_base()
 
@@ -24,8 +14,8 @@ class Cuisine(Base):
     cuisineid = Column(Integer, primary_key=True)
     name = Column(String(20), unique=False, nullable=False)
 
-    # def __repr__(self):
-    #     return '<Track %r>' % self.title
+    def __repr__(self):
+        return '<Cuisine %r>' % self.title
 
 
 
@@ -38,8 +28,8 @@ class Ingredient(Base):
     ingredientid = Column(Integer, primary_key=True)
     name = Column(String(100), unique=False, nullable=False)
     
-    # def __repr__(self):
-    #     return '<Track %r>' % self.title
+    def __repr__(self):
+        return '<Ingredient %r>' % self.title
 
 
 class Recipe(Base):
@@ -51,8 +41,8 @@ class Recipe(Base):
     recipeid = Column(Integer, primary_key=True)
     cuisineid = Column(ForeignKey("cuisines.cuisineid"), unique=False, nullable=False)
 
-    # def __repr__(self):
-    #     return '<Track %r>' % self.title
+    def __repr__(self):
+        return '<Recipe %r>' % self.title
 
 
 class RecipeIngredient(Base):
@@ -66,12 +56,12 @@ class RecipeIngredient(Base):
     ingredientid = Column(ForeignKey("ingredients.ingredientid"), unique=False, nullable=False)
     
 
-    # def __repr__(self):
-    #     return '<Track %r>' % self.title
+    def __repr__(self):
+        return '<Track %r>' % self.title
 
 
 
-def create_db():
+def create_db(engine_string):
     """Create database from provided engine string
     Args:
         engine_string: str - Engine string
