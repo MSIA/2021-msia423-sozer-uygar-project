@@ -57,7 +57,7 @@ class RecipeIngredient(Base):
     
 
     def __repr__(self):
-        return '<Track %r>' % self.title
+        return '<RecipeIngredient %r>' % self.title
 
 
 
