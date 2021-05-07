@@ -18,7 +18,6 @@ class Cuisine(Base):
         return '<Cuisine %r>' % self.title
 
 
-
 class Ingredient(Base):
     """Create a data model for the database to be set up for capturing songs
     """
@@ -27,7 +26,7 @@ class Ingredient(Base):
 
     ingredientid = Column(Integer, primary_key=True)
     name = Column(String(100), unique=False, nullable=False)
-    
+
     def __repr__(self):
         return '<Ingredient %r>' % self.title
 
@@ -39,7 +38,9 @@ class Recipe(Base):
     __tablename__ = 'recipes'
 
     recipeid = Column(Integer, primary_key=True)
-    cuisineid = Column(ForeignKey("cuisines.cuisineid"), unique=False, nullable=False)
+    cuisineid = Column(ForeignKey("cuisines.cuisineid"),
+                       unique=False,
+                       nullable=False)
 
     def __repr__(self):
         return '<Recipe %r>' % self.title
@@ -52,13 +53,15 @@ class RecipeIngredient(Base):
     __tablename__ = 'recipe_ingredients'
 
     riid = Column(Integer, primary_key=True)
-    recipeid = Column(ForeignKey("recipes.recipeid"), unique=False, nullable=False)
-    ingredientid = Column(ForeignKey("ingredients.ingredientid"), unique=False, nullable=False)
-    
+    recipeid = Column(ForeignKey("recipes.recipeid"),
+                      unique=False,
+                      nullable=False)
+    ingredientid = Column(ForeignKey("ingredients.ingredientid"),
+                          unique=False,
+                          nullable=False)
 
     def __repr__(self):
         return '<RecipeIngredient %r>' % self.title
-
 
 
 def create_db(engine_string):
@@ -70,4 +73,4 @@ def create_db(engine_string):
     engine = sqlalchemy.create_engine(engine_string)
 
     Base.metadata.create_all(engine)
-    #logger.info("Database created.")
+    # logger.info("Database created.")
