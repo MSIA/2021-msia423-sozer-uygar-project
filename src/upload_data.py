@@ -1,6 +1,7 @@
 import logging
 
 import boto3
+from botocore.exceptions import NoCredentialsError
 
 logger = logging.getLogger(__name__)
 
@@ -24,3 +25,5 @@ def upload(bucketname, filename, datapath):
         logger.error("Bucket does not exist")
     except FileNotFoundError:
         logger.error("File does not exist on the specified path")
+    except NoCredentialsError:
+        logger.error("AWS credentials not set as env variables")
