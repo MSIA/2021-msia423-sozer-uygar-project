@@ -11,19 +11,23 @@ import os
 # Default location of the data file
 DATA_PATH = "data/train.json"
 
-# Connection string
+# Components of connection string
 DB_HOST = os.environ.get('MYSQL_HOST')
 DB_PORT = os.environ.get('MYSQL_PORT')
 DB_USER = os.environ.get('MYSQL_USER')
 DB_PW = os.environ.get('MYSQL_PASSWORD')
 DATABASE = os.environ.get('MYSQL_DATABASE')
 DB_DIALECT = 'mysql+pymysql'
+
 SQLALCHEMY_DATABASE_URI = os.environ.get('SQLALCHEMY_DATABASE_URI')
 
+# If user provides a valid string, use it
 if SQLALCHEMY_DATABASE_URI is not None:
     pass
+# If environment variables are not set, default to sqlite
 elif DB_HOST is None:
     SQLALCHEMY_DATABASE_URI = 'sqlite:///data/kitchen.db'
+# If no string is provided, and env variables are set, construct string
 else:
     SQLALCHEMY_DATABASE_URI = ('{dialect}://{user}:{pw}@{host}:{port}/{db}'.
                                format(dialect=DB_DIALECT,
