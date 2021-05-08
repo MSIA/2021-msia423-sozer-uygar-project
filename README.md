@@ -156,7 +156,7 @@ filling in with your pre-approved credentials. Then run:
 docker run \
     -e AWS_ACCESS_KEY_ID \
     -e AWS_SECRET_ACCESS_KEY \
-    upload <name-of-bucket> <filename>
+    <IMAGE-NAME> upload <name-of-bucket> <filename>
 ```
 
 filling in your S3 bucket name (without `S3://`) and the name you want your file to appear as on S3.
@@ -198,7 +198,7 @@ docker run \
     -e MYSQL_USER \
     -e MYSQL_PASSWORD \
     -e DATABASE_NAME \
-    create
+    <IMAGE-NAME> create
 ```
 
 `create` command has an optional argument:
