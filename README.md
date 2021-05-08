@@ -1,4 +1,4 @@
-# MSiA 423 Project - CuisineHelper
+# MSiA 423 Project - CuisineHelpr
 
 Author: Uygar Sozer
 
