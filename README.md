@@ -179,7 +179,7 @@ docker run \
     -e MYSQL_PORT \
     -e MYSQL_USER \
     -e MYSQL_PASSWORD \
-    -e DATABASE_NAME \
+    -e MYSQL_DATABASE \
     <IMAGE-NAME> create
 ```
 
