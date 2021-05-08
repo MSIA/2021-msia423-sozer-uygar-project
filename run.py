@@ -40,7 +40,7 @@ if __name__ == "__main__":
 
     # Sub-parser for creating a database
     sb_create = subparsers.add_parser("create", description="Create database")
-    sb_create.add_argument("-e", "--engine_string",
+    sb_create.add_argument("-s", "--engine_string",
                            default=SQLALCHEMY_DATABASE_URI,
                            help="SQLAlchemy connection URI for database",
                            metavar="")
