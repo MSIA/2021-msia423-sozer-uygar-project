@@ -159,7 +159,12 @@ To create the database in the location configured in `config/dbconfig.py`, run:
 docker run <IMAGE-NAME> create
 ```
 
-By default, this command creates a database locally at `sqlite:///data/kitchen.db`.
+By default, this command creates a database locally at `sqlite:///data/kitchen.db` **within the Docker container**. If you would like to check the database locally, the command that is run is as follows:
+
+```bash
+python run.py create
+```
+making sure that your local environment (or `venv`) has all the required packages listed in `requirements.txt` at the root of this repository.
 
 Alternatively, you might want to specify a MySQL server to create the database on. For this, set MySQL configurations as environment variables:
 
