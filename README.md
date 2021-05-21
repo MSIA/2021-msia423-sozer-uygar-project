@@ -114,6 +114,7 @@ docker build -t <IMAGE-NAME> .
 
 replacing `<IMAGE-NAME>` with desired alias.
 
+Note: Windows users may need to add `winpty` before running Docker commands.
 
 ### 2. Configure database
 
