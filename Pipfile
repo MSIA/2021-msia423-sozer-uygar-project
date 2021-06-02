@@ -7,12 +7,16 @@ name = "pypi"
 SQLAlchemy = "*"
 PyMySQL = "*"
 boto3 = "*"
+sklearn = "*"
+numpy = "*"
+pandas = "*"
 
 [dev-packages]
 awscli = "*"
 ipython = "*"
 flake8 = "*"
 pytest= "*"
+black = "*"
 
 [requires]
 python_version = "3"
