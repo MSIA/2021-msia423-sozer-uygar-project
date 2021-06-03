@@ -48,23 +48,23 @@ class RecipeModel:
             mean_center, raw=True, axis=0
         )
 
-    def predict(self, ingredients, num_guesses=3):
+    def predict(self, ingredients):
 
         df = self.pred_train
 
         try:
             calc = df.loc[ingredients]
         except KeyError:
-            logger.error("Some of the keys not found: %s", ingredients)
+            logger.error("One or more of the keys not found: %s", ingredients)
             return
 
         calc = calc.drop(self.sum_column, axis=1).sum(axis=0)
 
         ordered = softmax(calc).sort_values(ascending=False)
 
-        return ordered[:num_guesses]
+        return ordered[: self.num_guesses]
 
-    def recommend(self, cuisine, num_ingredients=5, selected=None):
+    def recommend(self, cuisine, selected=None):
 
         df = self.rec_train
 
@@ -73,18 +73,17 @@ class RecipeModel:
 
         ordered = df.loc[:, cuisine].sort_values(ascending=False)
 
-        return list((ordered[:num_ingredients]).index)
+        return list((ordered[: self.num_ingredients]).index)
 
     def predict_and_recommend(self, ingredients):
 
-        pred_cuisines = self.predict(ingredients, num_guesses=self.num_guesses)
+        pred_cuisines = self.predict(ingredients)
         pred_list = list(pred_cuisines.index)
 
         rec_list = []
         for cuisine in pred_list:
             recommended = self.recommend(
                 cuisine,
-                num_ingredients=self.num_ingredients,
                 selected=ingredients,
             )
             rec_list.append(recommended)
