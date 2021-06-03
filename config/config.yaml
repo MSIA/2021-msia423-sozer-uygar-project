@@ -1,0 +1,24 @@
+processing:
+  clean:
+    PATTERNS:
+      - '^\(.*?\) '
+      - ',.*$'
+    REMOVE_WORDS:
+      - 'low-fat'
+      - 'lowfat'
+      - 'low fat'
+      - 'sodium'
+      - 'lb\.'
+      - 'ounc'
+  features:
+    DROP_ROWS:
+      - 'salt'
+      - 'water'
+      - 'sugar'
+    MIN_PREVALENCE: 100
+  model:
+    predict_and_recommend:
+      scale_const: 1000
+      num_cuisines: 3
+      num_ingredients: 5
+
