@@ -10,6 +10,7 @@ boto3 = "*"
 sklearn = "*"
 numpy = "*"
 pandas = "*"
+pyyaml = "*"
 
 [dev-packages]
 awscli = "*"
@@ -17,6 +18,11 @@ ipython = "*"
 flake8 = "*"
 pytest= "*"
 black = "*"
+jupyterlab = "*"
+ipykernel = "*"
 
 [requires]
 python_version = "3"
+
+[pipenv]
+allow_prereleases = true
