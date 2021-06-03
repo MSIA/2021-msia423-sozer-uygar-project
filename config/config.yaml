@@ -15,10 +15,14 @@ processing:
       - 'salt'
       - 'water'
       - 'sugar'
+      - 'olive oil'
     MIN_PREVALENCE: 100
   model:
-    predict_and_recommend:
-      scale_const: 1000
-      num_cuisines: 3
+    initialize:
+      num_guesses: 3
       num_ingredients: 5
+      
+    train:
+      scale_const: 1000
+      sum_column: 'ingr_sum'
 
