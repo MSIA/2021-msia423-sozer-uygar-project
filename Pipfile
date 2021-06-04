@@ -11,6 +11,8 @@ sklearn = "*"
 numpy = "*"
 pandas = "*"
 pyyaml = "*"
+flask = "*"
+flask-sqlalchemy = "*"
 
 [dev-packages]
 awscli = "*"
