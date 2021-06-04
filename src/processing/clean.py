@@ -7,12 +7,7 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 
-def cleaner(string):
-    pass
-
-
 def clean_ingr(items, patterns):
-
     fixed_items = []
     for item in items:
         for pattern in patterns:
