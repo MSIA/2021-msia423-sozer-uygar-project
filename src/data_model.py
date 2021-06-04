@@ -4,6 +4,7 @@ import sqlalchemy
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String
+from flask_sqlalchemy import SQLAlchemy
 
 # Set up module logger
 logger = logging.getLogger(__name__)
@@ -67,7 +68,7 @@ class Ingredient(Base):
 
     # String representation
     def __repr__(self):
-        return "<Ingredients %r>" % self.title
+        return "<Ingredients %r>" % self.cuisineid
 
 
 def create_db(engine_string):
@@ -77,17 +78,12 @@ def create_db(engine_string):
         engine_string (str): Engine string for DB
 
     Returns:
-        `sqlalchemy.orm.Session`: an `Engine` object
-        to bind to session
+        None
     """
     try:
         engine = sqlalchemy.create_engine(engine_string)
         Base.metadata.create_all(engine)
         logger.info("Database created.")
-
-        Session = sessionmaker(bind=engine)
-        session = Session()
-        return session
     except sqlalchemy.exc.ArgumentError:
         logger.error("Invalid engine string provided")
     except sqlalchemy.exc.OperationalError:
@@ -96,14 +92,56 @@ def create_db(engine_string):
         logger.error("Unknown error", e)
 
 
-def add_to_db(session, list_of_values):
-    all_ingr = []
-    for ingr_values in list_of_values:
-        inserts = {
-            table_columns[i]: ingr_values[i] for i in range(len(table_columns))
-        }
+class SessionManager:
+    def __init__(self, app=None, engine_string=None):
+        """
+        Args:
+            app: Flask - Flask app
+            engine_string: str - Engine string
+        """
+        if app:
+            self.db = SQLAlchemy(app)
+            self.session = self.db.session
+        elif engine_string:
+            engine = sqlalchemy.create_engine(engine_string)
+            Session = sessionmaker(bind=engine)
+            self.session = Session()
+        else:
+            raise ValueError(
+                "Need either an engine string or a Flask app to initialize"
+            )
 
-        all_ingr.append(Ingredient(**inserts))
+    def close(self) -> None:
+        """Closes session
+        Returns: None
+        """
+        self.session.close()
 
-    session.add_all(all_ingr)
-    session.commit()
+    def add_to_db(self, list_of_values):
+        all_ingr = []
+        for ingr_values in list_of_values:
+            inserts = {
+                table_columns[i]: ingr_values[i]
+                for i in range(len(table_columns))
+            }
+
+            all_ingr.append(Ingredient(**inserts))
+
+        self.session.add_all(all_ingr)
+        self.session.commit()
+
+    # def add_track(self, title: str, artist: str, album: str) -> None:
+    #     """Seeds an existing database with additional songs.
+    #     Args:
+    #         title: str - Title of song
+    #         artist: str - Artist
+    #         album: str - Album title
+    #     Returns:None
+    #     """
+
+    #     session = self.session
+    #     track = Tracks(artist=artist, album=album, title=title)
+    #     session.add(track)
+    #     session.commit()
+    #     logger.info("%s by %s from album, %s, added to database", title,
+    #       artist, album)
