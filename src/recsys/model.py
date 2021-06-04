@@ -1,6 +1,7 @@
 import logging
 
 import numpy as np
+import pandas as pd
 
 logger = logging.getLogger(__name__)
 
@@ -28,23 +29,23 @@ def softmax(raw):
 
 
 class RecipeModel:
-    def __init__(self, num_guesses=3, num_ingredients=5):
+    def __init__(self, NUM_GUESSES=3, NUM_INGREDIENTS=5):
         self.rec_train = None
         self.pred_train = None
 
-        self.num_guesses = num_guesses
-        self.num_ingredients = num_ingredients
+        self.num_guesses = NUM_GUESSES
+        self.num_ingredients = NUM_INGREDIENTS
 
         self.sum_column = None
 
-    def train(self, df, scale_const, sum_column):
-        self.sum_column = sum_column
+    def train(self, df, SCALE_CONST, SUM_COLUMN):
+        self.sum_column = SUM_COLUMN
 
         self.pred_train = df.apply(
-            normalize, exclude=[sum_column], scale=scale_const, axis=0
+            normalize, exclude=[self.sum_column], scale=SCALE_CONST, axis=0
         ).apply(mean_center, raw=True, axis=1)
 
-        self.rec_train = df.drop(sum_column, axis=1).apply(
+        self.rec_train = df.drop(self.sum_column, axis=1).apply(
             mean_center, raw=True, axis=0
         )
 
@@ -55,8 +56,12 @@ class RecipeModel:
         try:
             calc = df.loc[ingredients]
         except KeyError:
-            logger.error("One or more of the keys not found: %s", ingredients)
-            return
+            new_ingr = df.index.intersection(ingredients)
+            logger.warning(
+                "One or more of the keys not found: %s",
+                list(pd.Index(ingredients).difference(df.index)),
+            )
+            calc = df.loc[new_ingr]
 
         calc = calc.drop(self.sum_column, axis=1).sum(axis=0)
 
