@@ -3,7 +3,7 @@ import logging
 
 from src.upload_data import upload
 from src.data_model import create_db
-from config.dbconfig import SQLALCHEMY_DATABASE_URI, DATA_PATH
+from config.flaskconfig import SQLALCHEMY_DATABASE_URI, DATA_PATH
 
 # Set logger configuration, prints to stdout
 logging.basicConfig(
