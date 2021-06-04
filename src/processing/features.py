@@ -16,6 +16,6 @@ def generate_train_df(df, DROP_ROWS=None, MIN_PREVALENCE=100):
 
     cuisinedf["ingr_sum"] = ingr_sum(cuisinedf)
 
-    cuisinedf[cuisinedf.ingr_sum >= MIN_PREVALENCE]
+    cuisinedf = cuisinedf[cuisinedf.ingr_sum >= MIN_PREVALENCE]
 
     return cuisinedf
