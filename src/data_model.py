@@ -1,5 +1,6 @@
 import logging
 
+import pandas as pd
 import sqlalchemy
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
@@ -129,6 +130,14 @@ class SessionManager:
 
         self.session.add_all(all_ingr)
         self.session.commit()
+
+    def bind_model(self, model, **kwargs):
+        self.df = pd.read_sql("SELECT * FROM ingredients", self.session.bind)
+        traindf = self.df.set_index(keys=self.df.name).drop(["cuisineid", "name"], axis=1)
+
+        model.train(traindf, **kwargs)
+
+        self.model = model
 
     # def add_track(self, title: str, artist: str, album: str) -> None:
     #     """Seeds an existing database with additional songs.
