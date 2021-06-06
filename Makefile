@@ -4,6 +4,9 @@ datafolder = data/
 image:
 	docker build -t $(imagename) .
 
+data/raw.json:
+	python3 run.py download 2021-msia423-sozer-uygar raw.json data/raw.json
+
 raw: data/raw.json
 
 data/clean.csv: data/raw.json config/config.yaml
