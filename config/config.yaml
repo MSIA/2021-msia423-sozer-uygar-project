@@ -26,4 +26,7 @@ model:
   train:
     SCALE_CONST: 1000
     SUM_COLUMN: 'ingr_sum'
+  evaluate:
+    splits:
+      train_size: 0.8
 
