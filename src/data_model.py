@@ -1,4 +1,5 @@
 import logging
+import csv
 
 import pandas as pd
 import sqlalchemy
@@ -72,7 +73,7 @@ class Ingredient(Base):
         return "<Ingredients %r>" % self.cuisineid
 
 
-def create_db(engine_string):
+def create_db(engine):
     """Create database from provided engine string
 
     Args:
@@ -82,7 +83,6 @@ def create_db(engine_string):
         None
     """
     try:
-        engine = sqlalchemy.create_engine(engine_string)
         Base.metadata.create_all(engine)
         logger.info("Database created.")
     except sqlalchemy.exc.ArgumentError:
@@ -93,9 +93,8 @@ def create_db(engine_string):
         logger.error("Unknown error", e)
 
 
-def delete_db(engine_string):
+def delete_db(engine):
     """Delete database from provided engine string."""
-    engine = sqlalchemy.create_engine(engine_string)
     Base.metadata.drop_all(engine)
     logger.info("Database deleted")
 
@@ -125,7 +124,7 @@ class SessionManager:
         """
         self.session.close()
 
-    def add_to_db(self, list_of_values):
+    def add_to_db(self, datapath):
         """Populate table with ingredients
 
         Args:
@@ -135,14 +134,22 @@ class SessionManager:
             Each array must have a value representing each of the cuisines,
             and a variable at the end that has the sum of values.
         """
+        with open(datapath, "r") as f:
+            rows = list(csv.reader(f))
+            del rows[0]
+            # print(rows)
+            # print(table_columns)
+        
         # Initialize empty list, populate with dicts for each entry
         all_ingr = []
-        for ingr_values in list_of_values:
+
+        for ingr_values in rows:
             inserts = {
                 table_columns[i]: ingr_values[i]
                 for i in range(len(table_columns))
             }
-
+            # print(inserts)
+            # print(Ingredient(**inserts))
             all_ingr.append(Ingredient(**inserts))
 
         # Add all Ingredient objects to database, and commit
