@@ -10,9 +10,8 @@ from src.processing.clean import clean
 from src.processing.features import generate_train_df
 from src.recsys.model import RecipeModel
 from src.recsys.evaluate import generate_splits, get_accuracy
-from src.upload_data import upload
-from src.data_model import create_db, delete_db
-from config.flaskconfig import SQLALCHEMY_DATABASE_URI, DATA_PATH
+from src.upload_data import upload, download
+from config.flaskconfig import SQLALCHEMY_DATABASE_URI
 
 
 # Set logger configuration, prints to stdout
@@ -46,28 +45,13 @@ if __name__ == "__main__":
     )
     sp_upload.add_argument("bucket_name", help="Name of S3 bucket")
     sp_upload.add_argument("file_name", help="File name (key)")
-    sp_upload.add_argument(
-        "-d",
-        "--data_path",
-        default=DATA_PATH,
-        help="Custom path to file",
-        metavar="",
-    )
+    sp_upload.add_argument("data_path", help="Custom path to file")
 
     # Sub-parser for creating a database
-    sp_create = subparsers.add_parser("create", description="Create database")
-    sp_create.add_argument(
-        "-s",
-        "--engine_string",
-        default=SQLALCHEMY_DATABASE_URI,
-        help="SQLAlchemy connection URI for database",
-        metavar="",
-    )
-    sp_create.add_argument(
-        "--config",
-        default="config/config.yaml",
-        help="Path to configuration file",
-    )
+    sp_download = subparsers.add_parser("download", description="Download data stored on AWS S3 to local filesystem")
+    sp_download.add_argument("bucket_name", help="Name of S3 bucket")
+    sp_download.add_argument("path_from", help="File name (key)")
+    sp_download.add_argument("path_to", help="Path to save file")
 
     sp_pipeline = subparsers.add_parser(
         "pipeline", description="Data processing"
@@ -91,19 +75,22 @@ if __name__ == "__main__":
     args = parser.parse_args()
     logger.info(args)
     # Load configuration file for parameters and tmo path
-    with open(args.config, "r") as f:
-        config = yaml.load(f, Loader=yaml.FullLoader)
 
     sp_used = args.subparser_name
 
     if sp_used == "upload":
         logger.debug("Upload option invoked")
         upload(args.bucket_name, args.file_name, args.data_path)
+    if sp_used == "download":
+        logger.debug("Download option invoked")
+        download(args.bucket_name, args.path_from, args.path_to)
     elif sp_used == "pipeline":
         # if args.step == "acquire":
         #     # no input, output clouds.data
         #     output = acquire(**config["acquire"]["acquire"])
 
+        with open(args.config, "r") as f:
+            config = yaml.load(f, Loader=yaml.FullLoader)
         if args.step == "clean":
             # clouds.data -> clean.csv
             output = clean(args.input, **config["processing"]["clean"])
