@@ -7,13 +7,14 @@ import pandas as pd
 logger = logging.getLogger(__name__)
 
 
-def clean_ingr(items, patterns):
+def clean_ingr(items, patterns, verbose=False):
     fixed_items = []
     for item in items:
         for pattern in patterns:
             if re.match(pattern, item):
                 fixed = re.sub(pattern, "", item)
-                logger.debug("Exchanged %s to: %s", item, fixed)
+                if verbose:
+                    logger.debug("Exchanged %s to: %s", item, fixed)
                 item = fixed
         fixed_items.append(item)
 

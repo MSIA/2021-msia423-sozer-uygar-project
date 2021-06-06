@@ -49,7 +49,7 @@ class RecipeModel:
             mean_center, raw=True, axis=0
         )
 
-    def predict(self, ingredients):
+    def predict(self, ingredients, verbose=False):
 
         df = self.pred_train
 
@@ -57,10 +57,11 @@ class RecipeModel:
             calc = df.loc[ingredients]
         except KeyError:
             new_ingr = df.index.intersection(ingredients)
-            logger.warning(
-                "One or more of the keys not found: %s",
-                list(pd.Index(ingredients).difference(df.index)),
-            )
+            if verbose:
+                logger.warning(
+                    "One or more of the keys not found: %s",
+                    list(pd.Index(ingredients).difference(df.index)),
+                )
             calc = df.loc[new_ingr]
 
         calc = calc.drop(self.sum_column, axis=1).sum(axis=0)
@@ -80,9 +81,9 @@ class RecipeModel:
 
         return list((ordered[: self.num_ingredients]).index)
 
-    def predict_and_recommend(self, ingredients, request=False):
+    def predict_and_recommend(self, ingredients, request=False, verbose=False):
 
-        pred_cuisines = self.predict(ingredients)
+        pred_cuisines = self.predict(ingredients, verbose)
         pred_list = list(pred_cuisines.index)
 
         rec_list = []
