@@ -93,6 +93,13 @@ def create_db(engine_string):
         logger.error("Unknown error", e)
 
 
+def delete_db(engine_string):
+    """Delete database from provided engine string."""
+    engine = sqlalchemy.create_engine(engine_string)
+    Base.metadata.drop_all(engine)
+    logger.info("Database deleted")
+
+
 class SessionManager:
     def __init__(self, app=None, engine_string=None):
         """
@@ -119,6 +126,16 @@ class SessionManager:
         self.session.close()
 
     def add_to_db(self, list_of_values):
+        """Populate table with ingredients
+
+        Args:
+            list_of_values (`list`): List of arrays, each representing
+            one row.
+
+            Each array must have a value representing each of the cuisines,
+            and a variable at the end that has the sum of values.
+        """
+        # Initialize empty list, populate with dicts for each entry
         all_ingr = []
         for ingr_values in list_of_values:
             inserts = {
@@ -128,29 +145,15 @@ class SessionManager:
 
             all_ingr.append(Ingredient(**inserts))
 
+        # Add all Ingredient objects to database, and commit
         self.session.add_all(all_ingr)
         self.session.commit()
 
     def bind_model(self, model, **kwargs):
         self.df = pd.read_sql("SELECT * FROM ingredients", self.session.bind)
-        traindf = self.df.set_index(keys=self.df.name).drop(["cuisineid", "name"], axis=1)
+        traindf = self.df.set_index(keys=self.df.name).drop(
+            ["cuisineid", "name"], axis=1
+        )
 
         model.train(traindf, **kwargs)
-
         self.model = model
-
-    # def add_track(self, title: str, artist: str, album: str) -> None:
-    #     """Seeds an existing database with additional songs.
-    #     Args:
-    #         title: str - Title of song
-    #         artist: str - Artist
-    #         album: str - Album title
-    #     Returns:None
-    #     """
-
-    #     session = self.session
-    #     track = Tracks(artist=artist, album=album, title=title)
-    #     session.add(track)
-    #     session.commit()
-    #     logger.info("%s by %s from album, %s, added to database", title,
-    #       artist, album)
