@@ -1,9 +1,10 @@
-import traceback
+import json
 import logging.config
 from flask import Flask
-from flask import render_template, request, redirect, url_for
+from flask import render_template, request, redirect, url_for, jsonify
 from src.data_model import Ingredient, SessionManager
-import flask
+from src.recsys.model import RecipeModel
+
 
 # Initialize the Flask application
 app = Flask(
@@ -22,7 +23,13 @@ logger.debug("Web app log")
 # Initialize the database session
 
 
-track_manager = SessionManager(app)
+manager = SessionManager(app)
+
+manager.bind_model(
+    RecipeModel(NUM_GUESSES=3, NUM_INGREDIENTS=5),
+    SCALE_CONST=1000,
+    SUM_COLUMN="ingr_sum",
+)
 
 
 @app.route("/")
@@ -34,36 +41,82 @@ def index():
     """
 
     try:
-        ingredients = track_manager.session.query(Ingredient).all()
+
         logger.debug("Index page accessed")
-        return render_template("index.html", dropdownlist=ingredients)
+
+        return render_template("index.html")
     except:
         traceback.print_exc()
         logger.warning("Not able to display tracks, error page returned")
         return render_template("error.html")
 
 
-@app.route("/add", methods=["POST"])
-def add_entry():
+@app.route("/dropdown", methods=["GET"])
+def dropdown_options():
+    ingredients = manager.session.query(Ingredient).all()
+
+    menuitems = [
+        {"label": item.name, "value": item.cuisineid} for item in ingredients
+    ]
+
+    logger.debug(ingredients)
+
+    return jsonify(menuitems)
+
+# @app.route("/layout")
+# def layout_params():
+#     return jsonify(cols=NUM_)
+
+
+@app.route("/predict", methods=["POST"])
+def prediction():
     """View that process a POST with new song input
     :return: redirect to index page
     """
 
-    try:
-        track_manager.add_track(
-            artist=request.form["artist"],
-            album=request.form["album"],
-            title=request.form["title"],
-        )
-        logger.info(
-            "New song added: %s by %s",
-            request.form["title"],
-            request.form["artist"],
-        )
-        return redirect(url_for("index"))
-    except:
-        logger.warning("Not able to display tracks, error page returned")
-        return render_template("error.html")
+    # try:
+
+    # track_manager.add_track(
+    #     artist=request.form["artist"],
+    #     album=request.form["album"],
+    #     title=request.form["title"],
+    # )
+    # logger.info(
+    #     "New song added: %s by %s",
+    #     request.form["title"],
+    #     request.form["artist"],
+    # )
+    logger.info(request.form["data"])
+    selection = list(map(int, json.loads(request.form["data"])))
+    # print(selection)
+    # print(selection.split(","))
+    
+    # selection = selection.split(",")
+    # logger.info(selection)
+
+    ingr_list = (
+        manager.session.query(Ingredient)
+        .with_entities(Ingredient.name)
+        .filter(Ingredient.cuisineid.in_(selection))
+        .all()
+    )
+    logger.info(ingr_list)
+
+    ingr_list = [x[0] for x in ingr_list]
+
+    results = manager.model.predict_and_recommend(ingr_list, request=True)
+    logger.info(results)
+
+    logger.info("this is it")
+    #logger.info(request.form["ingno"])
+    logger.info("that was it")
+
+    return jsonify(results)
+
+    # except:
+
+    #     logger.warning("Not able to display tracks, error page returned")
+    #     return render_template("error.html")
 
 
 if __name__ == "__main__":
