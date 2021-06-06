@@ -11,7 +11,6 @@ from src.processing.features import generate_train_df
 from src.recsys.model import RecipeModel
 from src.recsys.evaluate import generate_splits, get_accuracy
 from src.upload_data import upload, download
-from config.flaskconfig import SQLALCHEMY_DATABASE_URI
 
 
 # Set logger configuration, prints to stdout
@@ -48,7 +47,10 @@ if __name__ == "__main__":
     sp_upload.add_argument("data_path", help="Custom path to file")
 
     # Sub-parser for creating a database
-    sp_download = subparsers.add_parser("download", description="Download data stored on AWS S3 to local filesystem")
+    sp_download = subparsers.add_parser(
+        "download",
+        description="Download data stored on AWS S3 to local filesystem",
+    )
     sp_download.add_argument("bucket_name", help="Name of S3 bucket")
     sp_download.add_argument("path_from", help="File name (key)")
     sp_download.add_argument("path_to", help="Path to save file")
