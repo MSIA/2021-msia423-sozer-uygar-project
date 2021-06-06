@@ -1,9 +1,19 @@
 import argparse
 import logging
+import yaml
+import os
+import json
 
+import pandas as pd
+
+from src.processing.clean import clean
+from src.processing.features import generate_train_df
+from src.recsys.model import RecipeModel
+from src.recsys.evaluate import generate_splits, get_accuracy
 from src.upload_data import upload
 from src.data_model import create_db
 from config.flaskconfig import SQLALCHEMY_DATABASE_URI, DATA_PATH
+
 
 # Set logger configuration, prints to stdout
 logging.basicConfig(
@@ -45,8 +55,8 @@ if __name__ == "__main__":
     )
 
     # Sub-parser for creating a database
-    sb_create = subparsers.add_parser("create", description="Create database")
-    sb_create.add_argument(
+    sp_create = subparsers.add_parser("create", description="Create database")
+    sp_create.add_argument(
         "-s",
         "--engine_string",
         default=SQLALCHEMY_DATABASE_URI,
@@ -54,7 +64,31 @@ if __name__ == "__main__":
         metavar="",
     )
 
+    sp_pipeline = subparsers.add_parser(
+        "pipeline", description="Data processing"
+    )
+    sp_pipeline.add_argument(
+        "step",
+        help="Which step to run",
+        choices=["clean", "features", "model"],
+    )
+
+    sp_pipeline.add_argument("--input", default=None, help="Path to input data")
+    sp_pipeline.add_argument(
+        "--config",
+        default="config/config.yaml",
+        help="Path to configuration file",
+    )
+    sp_pipeline.add_argument(
+        "--output", "-o", default=None, help="Path to save output CSV"
+    )
+
     args = parser.parse_args()
+
+    # Load configuration file for parameters and tmo path
+    with open(args.config, "r") as f:
+        config = yaml.load(f, Loader=yaml.FullLoader)
+
     sp_used = args.subparser_name
 
     if sp_used == "create":
@@ -63,5 +97,57 @@ if __name__ == "__main__":
     elif sp_used == "upload":
         logger.debug("Upload option invoked")
         upload(args.bucket_name, args.file_name, args.data_path)
+    elif sp_used == "pipeline":
+        # if args.step == "acquire":
+        #     # no input, output clouds.data
+        #     output = acquire(**config["acquire"]["acquire"])
+
+        if args.step == "clean":
+            # clouds.data -> clean.csv
+            output = clean(args.input, **config["processing"]["clean"])
+            try:
+                if args.output is not None:
+                    output.to_csv(args.output, index=False)
+            except AttributeError:
+                logger.error("Cannot write NoneType to file")
+
+        elif args.step == "features":
+            # clean.csv -> full.csv
+            input = pd.read_csv(args.input)
+            output = generate_train_df(
+                input, **config["processing"]["features"]
+            )
+
+            if args.output is not None:
+                output.to_csv(args.output, index=False)
+
+        elif args.step == "model":
+            # full.csv -> features/target -> results in a text file
+            train, test = generate_splits(
+                args.input, **config["model"]["evaluate"]["splits"]
+            )
+
+            output_path = args.output + "/evaluate/"
+
+            if not os.path.isdir(output_path):
+                os.mkdir(output_path)
+
+            with open(output_path + "train.json", "w") as f:
+                f.write(json.dumps(train))
+
+            with open(output_path + "test.json", "w") as f:
+                f.write(json.dumps(test))
+
+            train = clean(output_path + "train.json", **config["processing"]["clean"])
+            train = generate_train_df(train, **config["processing"]["features"])
+            
+            model = RecipeModel(**config["model"]["initialize"])
+            model.train(train, **config["model"]["train"])
+
+            acc = get_accuracy(model, test)
+
+            with open(output_path + "result.txt", "w") as f:
+                f.write(f"Accuracy: {str(acc)}")
+
     else:
         parser.print_help()
