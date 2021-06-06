@@ -7,9 +7,6 @@ SQLALCHEMY_TRACK_MODIFICATIONS = True
 HOST = "0.0.0.0"
 SQLALCHEMY_ECHO = False  # If true, SQL for queries made will be printed
 
-# Default location of the data file
-DATA_PATH = "data/train.json"
-
 # Components of connection string
 DB_HOST = os.environ.get('MYSQL_HOST')
 DB_PORT = os.environ.get('MYSQL_PORT')
