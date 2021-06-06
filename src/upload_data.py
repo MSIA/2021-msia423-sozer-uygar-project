@@ -27,3 +27,17 @@ def upload(bucketname, filename, datapath):
         logger.error("File does not exist on the specified path")
     except NoCredentialsError:
         logger.error("AWS credentials not set as env variables")
+
+
+def download(bucketname, path_from, path_to):
+    s3 = boto3.resource("s3")
+    bucket = s3.Bucket(bucketname)
+
+    # Upload file to S3
+    try:
+        bucket.download_file(path_from, path_to)
+        logger.info("Successfully downloaded file")
+    except FileNotFoundError:
+        logger.error("File does not exist on the specified path")
+    except NoCredentialsError:
+        logger.error("AWS credentials not set as env variables")
