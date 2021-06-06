@@ -80,7 +80,7 @@ class RecipeModel:
 
         return list((ordered[: self.num_ingredients]).index)
 
-    def predict_and_recommend(self, ingredients):
+    def predict_and_recommend(self, ingredients, request=False):
 
         pred_cuisines = self.predict(ingredients)
         pred_list = list(pred_cuisines.index)
@@ -93,4 +93,14 @@ class RecipeModel:
             )
             rec_list.append(recommended)
 
-        return dict(zip(pred_list, rec_list))
+        if request:
+            recs = {}
+            for i in range(len(pred_list)):
+                recs["cuisine" + str(i+1)] = pred_list[i]
+                for j in range(len(rec_list[i])):
+                    recs["option" + str(i+1) + str(j+1)] = rec_list[i][j]
+
+            return recs
+        else:
+            return dict(zip(pred_list, rec_list))
+
