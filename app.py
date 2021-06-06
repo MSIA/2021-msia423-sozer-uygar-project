@@ -1,8 +1,10 @@
 import json
 import logging.config
+import traceback
+
 from flask import Flask
 from flask import render_template, request, redirect, url_for, jsonify
-from src.data_model import Ingredient, SessionManager
+from src.data_model import Ingredient, SessionManager, delete_db, create_db
 from src.recsys.model import RecipeModel
 
 
@@ -24,6 +26,11 @@ logger.debug("Web app log")
 
 
 manager = SessionManager(app)
+
+delete_db(manager.db.engine)
+create_db(manager.db.engine)
+
+manager.add_to_db("data/full.csv")
 
 manager.bind_model(
     RecipeModel(NUM_GUESSES=3, NUM_INGREDIENTS=5),
