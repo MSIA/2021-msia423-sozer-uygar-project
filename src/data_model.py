@@ -139,7 +139,7 @@ class SessionManager:
             del rows[0]
             # print(rows)
             # print(table_columns)
-        
+
         # Initialize empty list, populate with dicts for each entry
         all_ingr = []
 

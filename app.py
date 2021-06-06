@@ -3,7 +3,7 @@ import logging.config
 import traceback
 
 from flask import Flask
-from flask import render_template, request, redirect, url_for, jsonify
+from flask import render_template, request, jsonify
 from src.data_model import Ingredient, SessionManager, delete_db, create_db
 from src.recsys.model import RecipeModel
 
@@ -70,6 +70,7 @@ def dropdown_options():
 
     return jsonify(menuitems)
 
+
 # @app.route("/layout")
 # def layout_params():
 #     return jsonify(cols=NUM_)
@@ -97,7 +98,7 @@ def prediction():
     selection = list(map(int, json.loads(request.form["data"])))
     # print(selection)
     # print(selection.split(","))
-    
+
     # selection = selection.split(",")
     # logger.info(selection)
 
@@ -115,7 +116,7 @@ def prediction():
     logger.info(results)
 
     logger.info("this is it")
-    #logger.info(request.form["ingno"])
+    # logger.info(request.form["ingno"])
     logger.info("that was it")
 
     return jsonify(results)
