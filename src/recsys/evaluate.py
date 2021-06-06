@@ -7,7 +7,7 @@ def generate_splits(filepath, train_size=0.8):
         obj = json.load(f)
 
     train, test = train_test_split(obj, train_size=train_size, shuffle=True)
-    
+
     return train, test
 
 

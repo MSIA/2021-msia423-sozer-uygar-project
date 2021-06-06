@@ -96,11 +96,10 @@ class RecipeModel:
         if request:
             recs = {}
             for i in range(len(pred_list)):
-                recs["cuisine" + str(i+1)] = pred_list[i]
+                recs["cuisine" + str(i + 1)] = pred_list[i]
                 for j in range(len(rec_list[i])):
-                    recs["option" + str(i+1) + str(j+1)] = rec_list[i][j]
+                    recs["option" + str(i + 1) + str(j + 1)] = rec_list[i][j]
 
             return recs
         else:
             return dict(zip(pred_list, rec_list))
-

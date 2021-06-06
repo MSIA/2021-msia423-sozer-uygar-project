@@ -138,9 +138,11 @@ if __name__ == "__main__":
             with open(output_path + "test.json", "w") as f:
                 f.write(json.dumps(test))
 
-            train = clean(output_path + "train.json", **config["processing"]["clean"])
+            train = clean(
+                output_path + "train.json", **config["processing"]["clean"]
+            )
             train = generate_train_df(train, **config["processing"]["features"])
-            
+
             model = RecipeModel(**config["model"]["initialize"])
             model.train(train, **config["model"]["train"])
 
