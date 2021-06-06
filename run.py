@@ -11,7 +11,7 @@ from src.processing.features import generate_train_df
 from src.recsys.model import RecipeModel
 from src.recsys.evaluate import generate_splits, get_accuracy
 from src.upload_data import upload
-from src.data_model import create_db
+from src.data_model import create_db, delete_db
 from config.flaskconfig import SQLALCHEMY_DATABASE_URI, DATA_PATH
 
 
@@ -63,6 +63,11 @@ if __name__ == "__main__":
         help="SQLAlchemy connection URI for database",
         metavar="",
     )
+    sp_create.add_argument(
+        "--config",
+        default="config/config.yaml",
+        help="Path to configuration file",
+    )
 
     sp_pipeline = subparsers.add_parser(
         "pipeline", description="Data processing"
@@ -84,17 +89,14 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-
+    logger.info(args)
     # Load configuration file for parameters and tmo path
     with open(args.config, "r") as f:
         config = yaml.load(f, Loader=yaml.FullLoader)
 
     sp_used = args.subparser_name
 
-    if sp_used == "create":
-        logger.debug("Create option invoked")
-        create_db(args.engine_string)
-    elif sp_used == "upload":
+    if sp_used == "upload":
         logger.debug("Upload option invoked")
         upload(args.bucket_name, args.file_name, args.data_path)
     elif sp_used == "pipeline":
@@ -105,6 +107,8 @@ if __name__ == "__main__":
         if args.step == "clean":
             # clouds.data -> clean.csv
             output = clean(args.input, **config["processing"]["clean"])
+            logger.info(output)
+            logger.info(args.output)
             try:
                 if args.output is not None:
                     output.to_csv(args.output, index=False)
@@ -119,7 +123,7 @@ if __name__ == "__main__":
             )
 
             if args.output is not None:
-                output.to_csv(args.output, index=False)
+                output.to_csv(args.output, index=True)
 
         elif args.step == "model":
             # full.csv -> features/target -> results in a text file
