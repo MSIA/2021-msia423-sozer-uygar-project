@@ -2,11 +2,21 @@
 <html lang="en">
 
 <head>
+
   <meta charset="UTF-8">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <link href="static/style.css" rel="stylesheet">
   <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"
     integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
   <script src="static/bundle.min.js"></script>
+
+
+  <script type="application/javascript">
+    $(document).ready(function () {
+
+    });
+  </script>
+
 </head>
 
 <body>
@@ -15,73 +25,83 @@
       <img src="static/mainlogo.png" alt="Main Logo">
     </div>
     <div class="searchbar">
-      <span class="example">
-        <script>
+      <span class=example>
+        <script type="text/javascript">
           const myOptions = [];
 
-          console.log("hello");
+          $.get("{{ url_for('dropdown_options') }}", (data, status) => {
+            Object.values(data).map(item => {
+              myOptions.push({ label: String(item.label), value: String(item.value) });
+              console.log("pushed");
 
-          {% for item in dropdownlist %}
-          myOptions.push({
-            label: "{{item.name}}",
-            value: "{{item.cuisineid}}"
+            })
+          }).done(() => {
+            var instance = new SelectPure(".example", {
+              options: myOptions,
+              multiple: true,
+              autocomplete: true,
+              icon: "fa fa-times", // uses Font Awesome
+              onChange: value => {
+                console.log(JSON.stringify(value));
+                $.post("{{ url_for('prediction') }}", data = { data: JSON.stringify(value) }, (d) => {
+                  console.log(d);
+                  Object.keys(d).map((val) => $("#" + val).text(d[val]))
+                })
+              },
+              classNames: {
+                select: "select-pure__select",
+                dropdownShown: "select-pure__select--opened",
+                multiselect: "select-pure__select--multiple",
+                label: "select-pure__label",
+                placeholder: "select-pure__placeholder",
+                dropdown: "select-pure__options",
+                option: "select-pure__option",
+                autocompleteInput: "select-pure__autocomplete",
+                selectedLabel: "select-pure__selected-label",
+                selectedOption: "select-pure__option--selected",
+                placeholderHidden: "select-pure__placeholder--hidden",
+                optionHidden: "select-pure__option--hidden",
+              }
+            })
           })
-          {% endfor %}
-
-
-          var instance = new SelectPure(".example", {
-            options: myOptions,
-            multiple: true,
-            autocomplete: true,
-            icon: "fa fa-times", // uses Font Awesome
-            onChange: value => { console.log(value); },
-            classNames: {
-              select: "select-pure__select",
-              dropdownShown: "select-pure__select--opened",
-              multiselect: "select-pure__select--multiple",
-              label: "select-pure__label",
-              placeholder: "select-pure__placeholder",
-              dropdown: "select-pure__options",
-              option: "select-pure__option",
-              autocompleteInput: "select-pure__autocomplete",
-              selectedLabel: "select-pure__selected-label",
-              selectedOption: "select-pure__option--selected",
-              placeholderHidden: "select-pure__placeholder--hidden",
-              optionHidden: "select-pure__option--hidden",
-            }
-          });
 
           console.log("rendered it");
         </script>
-
-
       </span>
     </div>
+
+
     <div class="centerboxes">
       <div class="displaybox">
-        <div class="su-box-content green"> <span class="su-box-title" your title> Cuisine 1</span>
+        <div class="su-box-content green"> <span class="cuisinename" id="cuisine1"> Cuisine 1</span>
           <ul>
-            <li>first item</li>
-            <li>second item</li>
-            <li>third item</li>
+            <li><span class="options" id="option11">item</span> </li>
+            <li><span class="options" id="option12">item</span></li>
+            <li><span class="options" id="option13">item</span></li>
+            <li><span class="options" id="option14">item</span></li>
+            <li><span class="options" id="option15">item</span></li>
           </ul>
         </div>
       </div>
       <div class="displaybox">
-        <div class="su-box-content green"> <span class="su-box-title" your title> Cuisine 2</span>
+        <div class="su-box-content green"> <span class="cuisinename" id="cuisine2"> Cuisine 2</span>
           <ul>
-            <li>first item</li>
-            <li>second item</li>
-            <li>third item</li>
+            <li><span class="options" id="option21">item</span></li>
+            <li><span class="options" id="option22">item</span></li>
+            <li><span class="options" id="option23">item</span></li>
+            <li><span class="options" id="option24">item</span></li>
+            <li><span class="options" id="option25">item</span></li>
           </ul>
         </div>
       </div>
       <div class="displaybox">
-        <div class="su-box-content green"> <span class="su-box-title" your title> Cuisine 3</span>
+        <div class="su-box-content green"> <span class="cuisinename" id="cuisine3"> Cuisine 3</span>
           <ul>
-            <li>first item</li>
-            <li>second item</li>
-            <li>third item</li>
+            <li><span class="options" id="option31">item</span></li>
+            <li><span class="options" id="option32">item</span></li>
+            <li><span class="options" id="option33">item</span></li>
+            <li><span class="options" id="option34">item</span></li>
+            <li><span class="options" id="option35">item</span></li>
           </ul>
         </div>
       </div>
