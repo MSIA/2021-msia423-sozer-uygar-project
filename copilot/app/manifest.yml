@@ -31,9 +31,15 @@ exec: true     # Enable running commands in your container.
 #variables:                    # Pass environment variables as key value pairs.
 #  LOG_LEVEL: info
 
-#secrets:                      # Pass secrets from AWS Systems Manager (SSM) Parameter Store.
-#  GITHUB_TOKEN: GITHUB_TOKEN  # The key is the name of the environment variable, the value is the name of the SSM parameter.
-
+  # The key is the name of the environment variable, the value is the name of the SSM parameter.
+secrets:
+  MYSQL_HOST: /copilot/cuisinehelpr/dev/secrets/MYSQL_HOST
+  MYSQL_PORT: /copilot/cuisinehelpr/dev/secrets/MYSQL_PORT
+  MYSQL_USER: /copilot/cuisinehelpr/dev/secrets/MYSQL_USER
+  MYSQL_PASSWORD: /copilot/cuisinehelpr/dev/secrets/MYSQL_PASSWORD
+  MYSQL_DATABASE: /copilot/cuisinehelpr/dev/secrets/MYSQL_DATABASE
+  AWS_ACCESS_KEY_ID: /copilot/cuisinehelpr/dev/secrets/AWS_ACCESS_KEY_ID
+  AWS_SECRET_ACCESS_KEY: /copilot/cuisinehelpr/dev/secrets/AWS_SECRET_ACCESS_KEY
 # You can override any of the values defined above by environment.
 #environments:
 #  test:
