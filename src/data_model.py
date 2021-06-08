@@ -68,23 +68,20 @@ class Ingredient(Base):
     vietnamese = Column(Integer, unique=False, nullable=False)
     ingr_sum = Column(Integer, unique=False, nullable=False)
 
-    # String representation
+    # String representation, displays primary key
     def __repr__(self):
         return "<Ingredients %r>" % self.cuisineid
 
 
 def create_db(engine):
-    """Create database from provided engine string
+    """Create db at the specified engine.
 
     Args:
-        engine_string (str): Engine string for DB
-
-    Returns:
-        None
+        engine (`sqlalchemy.engine.Engine`): specified engine object
     """
     try:
         Base.metadata.create_all(engine)
-        logger.info("Database created.")
+        logger.info("Database created at %s.", engine)
     except sqlalchemy.exc.ArgumentError:
         logger.error("Invalid engine string provided")
     except sqlalchemy.exc.OperationalError:
@@ -94,9 +91,20 @@ def create_db(engine):
 
 
 def delete_db(engine):
-    """Delete database from provided engine string."""
-    Base.metadata.drop_all(engine)
-    logger.info("Database deleted")
+    """Delete database from provided engine.x
+
+    Args:
+        engine (`sqlalchemy.engine.Engine`): specified engine object
+    """
+    try:
+        Base.metadata.drop_all(engine)
+        logger.info("Database deleted at %s.", engine)
+    except sqlalchemy.exc.ArgumentError:
+        logger.error("Invalid engine string provided")
+    except sqlalchemy.exc.OperationalError:
+        logger.error("Connection timed out, please check VPN connection")
+    except Exception as e:
+        logger.error("Unknown error", e)
 
 
 class SessionManager:
@@ -107,9 +115,12 @@ class SessionManager:
             engine_string: str - Engine string
         """
         if app:
+            # If app is given, then get db bound to Flask
             self.db = SQLAlchemy(app)
             self.session = self.db.session
         elif engine_string:
+            # If engine string is given, then create
+            # new SQLAlchemy engine object
             engine = sqlalchemy.create_engine(engine_string)
             Session = sessionmaker(bind=engine)
             self.session = Session()
@@ -128,17 +139,20 @@ class SessionManager:
         """Populate table with ingredients
 
         Args:
-            list_of_values (`list`): List of arrays, each representing
-            one row.
+            datapath (`str`): path to cleaned dataset (full)
 
-            Each array must have a value representing each of the cuisines,
-            and a variable at the end that has the sum of values.
+            Each row of the table must have a value representing each
+            of the cuisines, and a variable at the end that
+            has the sum of values.
         """
         with open(datapath, "r") as f:
+            logger.info("Opened csv file at %s", datapath)
+            # Turn csv file into list of lists
             rows = list(csv.reader(f))
+            logger.info("Obtained %i records", len(rows))
+
             del rows[0]
-            # print(rows)
-            # print(table_columns)
+            logger.debug("Removed header row")
 
         # Initialize empty list, populate with dicts for each entry
         all_ingr = []
@@ -148,19 +162,28 @@ class SessionManager:
                 table_columns[i]: ingr_values[i]
                 for i in range(len(table_columns))
             }
-            # print(inserts)
-            # print(Ingredient(**inserts))
             all_ingr.append(Ingredient(**inserts))
 
         # Add all Ingredient objects to database, and commit
+        logger.info("Attempting to insert records")
         self.session.add_all(all_ingr)
+        logger.info("Added %i records", len(all_ingr))
         self.session.commit()
 
     def bind_model(self, model, **kwargs):
+        """Bind a model object to session manager
+
+        Args:
+            model (any): Generic model object
+        """
+        # Get train df from `ingredients` table
         self.df = pd.read_sql("SELECT * FROM ingredients", self.session.bind)
+
+        # Prepare for training
         traindf = self.df.set_index(keys=self.df.name).drop(
             ["cuisineid", "name"], axis=1
         )
 
         model.train(traindf, **kwargs)
         self.model = model
+        logger.info("Assigned a new model to subject of type %s", type(model))
