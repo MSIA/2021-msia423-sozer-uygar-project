@@ -1,114 +1,189 @@
 <!DOCTYPE html>
 <html lang="en">
+  <head>
+    <title>CuisineHelpr</title>
+    <link rel="shortcut icon" href="static/favicon.ico" />
+    <meta charset="UTF-8" />
 
-<head>
-  <title> CuisineHelpr </title>
-  <link rel="shortcut icon" href="static/favicon.ico">
-  <meta charset="UTF-8">
+    <link href="static/style.css" rel="stylesheet" />
+    <link
+      href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
+      rel="stylesheet"
+      integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN"
+      crossorigin="anonymous"
+    />
+    <script src="static/bundle.min.js"></script>
+    <script src="static/jquery-3.6.0.min.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/purecss@2.0.6/build/pure-min.css"
+      integrity="sha384-Uu6IeWbM+gzNVXJcM9XV3SohHtmWE+3VGi496jvgX1jyvDTXfdK+rfZc8C1Aehk5"
+      crossorigin="anonymous"
+    />
 
-  <link href="static/style.css" rel="stylesheet">
-  <link href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet"
-    integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
-  <script src="static/bundle.min.js"></script>
-  <script src="static/jquery-3.6.0.min.js"></script>
+    <script type="application/javascript">
+      $(document).ready(function () {
+        // When button is clicked, log the selection -- for a future implementation
+        $(".pure-button").click(function () {
+          console.log(this.innerHTML);
+          console.log(this.code)
+          $.post(
+                    "{{ url_for('conversion') }}",
+                    (data = this.innerHTML),
+                    (d) => {
+                      console.log($(".searchbar").attr("selection"))
+                      })
+        });
+      });
+    </script>
+  </head>
 
+  <body>
+    <div class="whole">
+      <div class="horizontal_align">
+        <div class="logo">
+          <img src="static/mainlogo.png" alt="Main Logo" />
+        </div>
+        <div class="openingmsg" id="line1">Click on the bar to get started!</div>
+        <div class="openingmsg" id="line2">Based on your selections, our engine will return 3 likely cuisines and ingredients that will complement.</div>
+        <span class="searchbar">
+          <script type="text/javascript">
+            const myOptions = [];
+            var datadict = {};
 
-  <script type="application/javascript">
-    $(document).ready(function () {
+            // Get dropdown menu options from web server, when done, create dropdown element
+            $.get("{{ url_for('dropdown_options') }}", (data, status) => {
+              Object.values(data).map((item) => {
+                myOptions.push({
+                  label: String(item.label),
+                  value: String(item.value),
+                });
+                console.log("pushed");
+              });
+            }).done(() => {
+              var instance = new SelectPure(".searchbar", {
+                options: myOptions,
+                multiple: true,
+                autocomplete: true,
+                icon: "fa fa-times", // uses Font Awesome
+                onChange: (value) => {
+                  // After first selection on menu, hide welcome messages
+                  $(".openingmsg").hide();
+                  
+                  // Store current value on the searchbar div element -- for future
+                  $(".searchbar").attr("selection", JSON.stringify(value));
+                  console.log(JSON.stringify(value));
+                  
+                  // Send a POST request
+                  $.post(
+                    "{{ url_for('prediction') }}",
+                    (data = { data: JSON.stringify(value) }),
+                    (d) => {
+                      console.log(d);
+                      
+                      // Update each corresponding element (keys of dict) with values
+                      Object.keys(d).map((val) => {
+                        $("#" + val).text(d[val]);
 
-    });
-  </script>
+                      });
+                    }
+                  );
+                },
+                classNames: {
+                  select: "select-pure__select",
+                  dropdownShown: "select-pure__select--opened",
+                  multiselect: "select-pure__select--multiple",
+                  label: "select-pure__label",
+                  placeholder: "select-pure__placeholder",
+                  dropdown: "select-pure__options",
+                  option: "select-pure__option",
+                  autocompleteInput: "select-pure__autocomplete",
+                  selectedLabel: "select-pure__selected-label",
+                  selectedOption: "select-pure__option--selected",
+                  placeholderHidden: "select-pure__placeholder--hidden",
+                  optionHidden: "select-pure__option--hidden",
+                },
+              });
+            });
 
-</head>
+            console.log("rendered dropdown menu");
+          </script>
+        </span>
 
-<body>
-  <div class="whole">
-    <div class="logo">
-      <img src="static/mainlogo.png" alt="Main Logo">
+        <!-- <div class="su-box-content green"> <span class="su-box-title" your title</span> your text here </div> -->
+
+        <div class="centerboxes">
+          <div class="displaybox">
+            <div class="content-box bforbloggers1">
+              <span class="content-box bforbloggers1 title" id="cuisine1">
+                Cuisine 1</span
+              >
+
+              <div class="button-box">
+                <button class="pure-button" id="option11">item</button>
+              </div>
+              <div class="button-box">
+                <button class="pure-button" id="option12">item</button>
+              </div>
+              <div class="button-box">
+                <button class="pure-button" id="option13">item</button>
+              </div>
+              <div class="button-box">
+                <button class="pure-button" id="option14">item</button>
+              </div>
+              <div class="button-box">
+                <button class="pure-button" id="option15">item</button>
+              </div>
+            </div>
+          </div>
+          <div class="displaybox">
+            <div class="content-box bforbloggers1">
+              <span class="content-box bforbloggers1 title" id="cuisine2">
+                Cuisine 2</span
+              >
+
+              <div class="button-box">
+                <button class="pure-button" id="option21">item</button>
+              </div>
+              <div class="button-box">
+                <button class="pure-button" id="option22">item</button>
+              </div>
+              <div class="button-box">
+                <button class="pure-button" id="option23">item</button>
+              </div>
+              <div class="button-box">
+                <button class="pure-button" id="option24">item</button>
+              </div>
+              <div class="button-box">
+                <button class="pure-button" id="option25">item</button>
+              </div>
+            </div>
+          </div>
+          <div class="displaybox">
+            <div class="content-box bforbloggers1">
+              <span class="content-box bforbloggers1 title" id="cuisine3">
+                Cuisine 3</span
+              >
+
+              <div class="button-box">
+                <button class="pure-button" id="option31">item</button>
+              </div>
+              <div class="button-box">
+                <button class="pure-button" id="option32">item</button>
+              </div>
+              <div class="button-box">
+                <button class="pure-button" id="option33">item</button>
+              </div>
+              <div class="button-box">
+                <button class="pure-button" id="option34">item</button>
+              </div>
+              <div class="button-box">
+                <button class="pure-button" id="option35">item</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-    <span class="searchbar">
-      <script type="text/javascript">
-        const myOptions = [];
-
-        $.get("{{ url_for('dropdown_options') }}", (data, status) => {
-          Object.values(data).map(item => {
-            myOptions.push({ label: String(item.label), value: String(item.value) });
-            console.log("pushed");
-
-          })
-        }).done(() => {
-          var instance = new SelectPure(".searchbar", {
-            options: myOptions,
-            multiple: true,
-            autocomplete: true,
-            icon: "fa fa-times", // uses Font Awesome
-            onChange: value => {
-              console.log(JSON.stringify(value));
-              $.post("{{ url_for('prediction') }}", data = { data: JSON.stringify(value) }, (d) => {
-                console.log(d);
-                Object.keys(d).map((val) => $("#" + val).text(d[val]))
-              })
-            },
-            classNames: {
-              select: "select-pure__select",
-              dropdownShown: "select-pure__select--opened",
-              multiselect: "select-pure__select--multiple",
-              label: "select-pure__label",
-              placeholder: "select-pure__placeholder",
-              dropdown: "select-pure__options",
-              option: "select-pure__option",
-              autocompleteInput: "select-pure__autocomplete",
-              selectedLabel: "select-pure__selected-label",
-              selectedOption: "select-pure__option--selected",
-              placeholderHidden: "select-pure__placeholder--hidden",
-              optionHidden: "select-pure__option--hidden",
-            }
-          })
-        })
-
-        console.log("rendered it");
-      </script>
-    </span>
-
-
-
-    <div class="centerboxes">
-      <div class="displaybox">
-        <div class="su-box-content green"> <span class="cuisinename" id="cuisine1"> Cuisine 1</span>
-          <ul>
-            <li><span class="options" id="option11">item</span> </li>
-            <li><span class="options" id="option12">item</span></li>
-            <li><span class="options" id="option13">item</span></li>
-            <li><span class="options" id="option14">item</span></li>
-            <li><span class="options" id="option15">item</span></li>
-          </ul>
-        </div>
-      </div>
-      <div class="displaybox">
-        <div class="su-box-content green"> <span class="cuisinename" id="cuisine2"> Cuisine 2</span>
-          <ul>
-            <li><span class="options" id="option21">item</span></li>
-            <li><span class="options" id="option22">item</span></li>
-            <li><span class="options" id="option23">item</span></li>
-            <li><span class="options" id="option24">item</span></li>
-            <li><span class="options" id="option25">item</span></li>
-          </ul>
-        </div>
-      </div>
-      <div class="displaybox">
-        <div class="su-box-content green"> <span class="cuisinename" id="cuisine3"> Cuisine 3</span>
-          <ul>
-            <li><span class="options" id="option31">item</span></li>
-            <li><span class="options" id="option32">item</span></li>
-            <li><span class="options" id="option33">item</span></li>
-            <li><span class="options" id="option34">item</span></li>
-            <li><span class="options" id="option35">item</span></li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </div>
-</body>
-
-
+  </body>
 </html>

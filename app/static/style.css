@@ -3,6 +3,14 @@ body {
   background: radial-gradient(circle, rgba(140,219,33,1) 0%, rgba(255,255,255,1) 100%);
 } */
 
+/* Element | http://localhost:5000/ */
+
+.whole {
+  padding-top: 0px;
+  padding-bottom: 0px;
+  padding-left: 150px;
+  padding-right: 150px;
+}
 
 .select-wrapper {
   margin: auto;
@@ -106,33 +114,40 @@ body {
   width: 100%;
 }
 
-.su-box-title {
-    display: block;
-    padding: .5em 1em;
-    font-weight: 700;
-    font-size: 1.1em;
-    background-color: #4fff59;
-    color: #FFFFFF;
-    border-top-left-radius: 1px;
-    border-top-right-radius: 1px;
-    border-color: #3fcc47;
-    border-radius: 20px;
+.content-box .title {
+  margin: -2rem -2rem 1rem -2rem;
+  padding: 0.5rem 2rem 0.5rem 1rem;
+  display: block;
+  font-weight: bold;
+  color: #fff;
+  font-size: 1.125rem;
 }
 
-.su-box-content.green {
-    background-color: white;
-    color: #444;
-    padding: 1em;
-    /* border-color: #3fcc47; */
-    border: 5px solid gray;
-    float: left;
-    }
+.content-box.bforbloggers1 {
+  border-color: #e22828;
+}
+
+.content-box.bforbloggers1 {
+  background: rgba(226, 40, 40, 0.2);
+  http: //cuisi-Publi-B470CO2N9Q54-1801931470.us-east-1.elb.amazonaws.com};
+}
+
+.content-box.bforbloggers1.title {
+  background: #e22828;
+}
+
+.content-box {
+  border-radius: 5px;
+  border: 1px solid;
+  padding: 2rem 2rem 1rem 2rem;
+  margin: 0 0 2rem 0;
+  font-weight: normal;
+}
 
 .centerboxes {
-  border: 5px solid #FFFF00;
   display: flex;
   justify-content: center;
-  padding: 1em;
+  padding: 1px;
 }
 
 .whole {
@@ -142,12 +157,12 @@ body {
 }
 
 .searchbar {
-  padding: 1em
+  padding: 1em;
 }
 
 .displaybox {
   padding: 1em;
-  flex: 1
+  flex: 1;
 }
 
 img {
@@ -155,4 +170,12 @@ img {
   margin-left: auto;
   margin-right: auto;
   width: 70%;
+}
+
+.pure-button {
+  display: block;
+}
+
+.openingmsg {
+  text-align: center;
 }
