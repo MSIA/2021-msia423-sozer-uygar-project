@@ -3,6 +3,7 @@ import csv
 
 import pandas as pd
 import sqlalchemy
+from sqlalchemy.exc import ArgumentError
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy import Column, Integer, String
@@ -73,30 +74,36 @@ class Ingredient(Base):
         return "<Ingredients %r>" % self.cuisineid
 
 
-def create_db(engine):
+def create_db(engine_string, engine=None):
     """Create db at the specified engine.
 
     Args:
-        engine (`sqlalchemy.engine.Engine`): specified engine object
+        engine_string (str): URI to engine
+        engine (`sqlalchemy.engine.Engine`): specified engine object, optional
     """
     try:
+        if not engine:
+            engine = sqlalchemy.create_engine(engine_string)
         Base.metadata.create_all(engine)
         logger.info("Database created at %s.", engine)
     except sqlalchemy.exc.ArgumentError:
         logger.error("Invalid engine string provided")
-    except sqlalchemy.exc.OperationalError:
-        logger.error("Connection timed out, please check VPN connection")
+    # except sqlalchemy.exc.OperationalError:
+    #     logger.error("Connection timed out, please check VPN connection")
     except Exception as e:
         logger.error("Unknown error", e)
 
 
-def delete_db(engine):
+def delete_db(engine_string, engine=None):
     """Delete database from provided engine.x
 
     Args:
-        engine (`sqlalchemy.engine.Engine`): specified engine object
+        engine_string (str): URI to engine
+        engine (`sqlalchemy.engine.Engine`): specified engine object, optional
     """
     try:
+        if not engine:
+            engine = sqlalchemy.create_engine(engine_string)
         Base.metadata.drop_all(engine)
         logger.info("Database deleted at %s.", engine)
     except sqlalchemy.exc.ArgumentError:
@@ -121,25 +128,37 @@ class SessionManager:
         elif engine_string:
             # If engine string is given, then create
             # new SQLAlchemy engine object
-            engine = sqlalchemy.create_engine(engine_string)
-            Session = sessionmaker(bind=engine)
-            self.session = Session()
+            try:
+                engine = sqlalchemy.create_engine(engine_string)
+                Session = sessionmaker(bind=engine)
+                self.session = Session()
+            except sqlalchemy.exc.ArgumentError:
+                logger.error(
+                    "Could not parse engine URL from %s", engine_string
+                )
+            except sqlalchemy.exc.OperationalError:
+                logger.error(
+                    "Timed out, check to see if DB configuration \
+                    is passed as env variables"
+                )
         else:
             raise ValueError(
                 "Need either an engine string or a Flask app to initialize"
             )
 
-    def close(self) -> None:
+    def close(self):
         """Closes session
         Returns: None
         """
         self.session.close()
 
-    def add_to_db(self, datapath):
-        """Populate table with ingredients
+    def add_to_db(self, datapath, header=True):
+        """Populate table with ingredients.
 
         Args:
             datapath (`str`): path to cleaned dataset (full)
+            header (bool, optional): If true, csv file has
+            a header row. True by default.
 
             Each row of the table must have a value representing each
             of the cuisines, and a variable at the end that
@@ -151,6 +170,7 @@ class SessionManager:
             rows = list(csv.reader(f))
             logger.info("Obtained %i records", len(rows))
 
+        if header:
             del rows[0]
             logger.debug("Removed header row")
 
@@ -158,17 +178,28 @@ class SessionManager:
         all_ingr = []
 
         for ingr_values in rows:
-            inserts = {
-                table_columns[i]: ingr_values[i]
-                for i in range(len(table_columns))
-            }
-            all_ingr.append(Ingredient(**inserts))
+            try:
+                inserts = {
+                    table_columns[i]: ingr_values[i]
+                    for i in range(len(table_columns))
+                }
+                all_ingr.append(Ingredient(**inserts))
+            except IndexError:
+                logger.warning(
+                    "Row length %i do not match up number of columns %i",
+                    len(table_columns),
+                    len(ingr_values),
+                )
 
         # Add all Ingredient objects to database, and commit
-        logger.info("Attempting to insert records")
-        self.session.add_all(all_ingr)
-        logger.info("Added %i records", len(all_ingr))
-        self.session.commit()
+        try:
+            logger.info("Attempting to insert records")
+            self.session.add_all(all_ingr)
+            logger.info("Added %i records", len(all_ingr))
+            self.session.commit()
+            logger.info("Changes committed to db %s", self.session.bind)
+        except sqlalchemy.exc.DatabaseError:
+            logger.error("Connection timed out!")
 
     def bind_model(self, model, **kwargs):
         """Bind a model object to session manager
@@ -177,7 +208,15 @@ class SessionManager:
             model (any): Generic model object
         """
         # Get train df from `ingredients` table
-        self.df = pd.read_sql("SELECT * FROM ingredients", self.session.bind)
+        try:
+            self.df = pd.read_sql(
+                "SELECT * FROM ingredients", self.session.bind
+            )
+        except ArgumentError:
+            logger.error(
+                "Invalid DB, please reset the db %s", self.session.bind
+            )
+            return None
 
         # Prepare for training
         traindf = self.df.set_index(keys=self.df.name).drop(

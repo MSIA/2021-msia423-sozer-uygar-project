@@ -123,12 +123,12 @@ def clean(
     """
 
     # Add any additional patterns to remove from ingr name
-    with regex_patterns(remove_words) as rp:
-        # function might return None values
-        if rp:
-            patterns = patterns + rp
-        else:
-            logger.warning("One or more words have wrong type")
+    rp = regex_patterns(remove_words)
+    # function might return None values
+    if rp:
+        patterns = patterns + rp
+    else:
+        logger.warning("One or more words have wrong type")
 
     # Get JSON as dictionary
     data = convert_json(data_path)

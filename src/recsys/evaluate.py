@@ -20,12 +20,20 @@ def generate_splits(filepath, random_state, train_size=0.8):
     try:
         with open(filepath, "r") as f:
             obj = json.load(f)
+            logger.debug("Opened file at %s", filepath)
     except json.JSONDecodeError:
         logger.error("invalid file supplied at %s, exiting eval", filepath)
         return None
 
     train, test = train_test_split(
         obj, train_size=train_size, shuffle=True, random_state=random_state
+    )
+    logger.info(
+        "Created train set of size %i and \
+        test set of size %i, train size %f",
+        len(train),
+        len(test),
+        train_size,
     )
 
     return train, test
@@ -45,6 +53,7 @@ def get_accuracy(trained_model, test_list):
         cleantest = [(i["ingredients"], i["cuisine"]) for i in test_list]
     except KeyError:
         logger.error("Test set contains corrupted values")
+        return None
 
     def evaluator(x):
         """Compare label to prediction"""
@@ -52,4 +61,10 @@ def get_accuracy(trained_model, test_list):
 
     # Return percentage of sets of predictions that matched
     # the label within set
-    return sum(list(map(evaluator, cleantest))) / len(cleantest)
+    try:
+        acc = sum(list(map(evaluator, cleantest))) / len(cleantest)
+    except ZeroDivisionError:
+        logger.error("Supplied empty training set, exiting")
+        return None
+
+    return acc
