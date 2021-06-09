@@ -91,11 +91,12 @@ class RecipeModel:
     - predict()
     - recommend()
     - predict_and_recommend()
-    
+
     Training dataframes:
     - RecipeModel.rec_train (`pandas.DataFrame`)
     - RecipeModel.pred_train (`pandas.DataFrame`)
     """
+
     def __init__(self, num_guesses=3, num_ingredients=5):
         # Initialize train sets for predictions and recommendations
         self.rec_train = None
