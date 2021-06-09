@@ -6,7 +6,7 @@ from sklearn.model_selection import train_test_split
 logger = logging.getLogger(__name__)
 
 
-def generate_splits(filepath, train_size=0.8):
+def generate_splits(filepath, random_state, train_size=0.8):
     """Generate a train and test split from raw data file
 
     Args:
@@ -24,7 +24,9 @@ def generate_splits(filepath, train_size=0.8):
         logger.error("invalid file supplied at %s, exiting eval", filepath)
         return None
 
-    train, test = train_test_split(obj, train_size=train_size, shuffle=True)
+    train, test = train_test_split(
+        obj, train_size=train_size, shuffle=True, random_state=random_state
+    )
 
     return train, test
 
