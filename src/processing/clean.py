@@ -29,9 +29,17 @@ def clean_ingr(items, patterns, verbose=False):
         for pattern in patterns:
             # if match found, replace with empty str
             if re.match(pattern, item):
-                fixed = re.sub(pattern, "", item)
+                try:
+                    fixed = re.sub(pattern, "", item)
+                except TypeError:
+                    logger.warning(
+                        "String type expected in record,\
+                        attempting converting to string"
+                    )
+                    fixed = re.sub(pattern, "", str(item))
+                # Print warnings
                 if verbose:
-                    logger.debug("Exchanged %s to: %s", item, fixed)
+                    logger.warning("Exchanged %s to: %s", item, fixed)
                 item = fixed
 
         fixed_items.append(item)
@@ -49,7 +57,11 @@ def regex_patterns(remove_words):
     Returns:
         list: List of formatted regular expression patterns
     """
-    words = ["^.*" + word + " " for word in remove_words]
+    try:
+        words = ["^.*" + word + " " for word in remove_words]
+    except TypeError:
+        logger.warning("Expected string")
+        return None
 
     return words
 
@@ -70,7 +82,7 @@ def convert_json(data_path):
     except JSONDecodeError:
         logger.error("Invalid file provided at %s", data_path)
 
-    # parse file
+    # Parse file
     obj = json.loads(data)
     logger.info("Obtained %i records", len(obj))
 
@@ -111,7 +123,12 @@ def clean(
     """
 
     # Add any additional patterns to remove from ingr name
-    patterns = patterns + regex_patterns(remove_words)
+    with regex_patterns(remove_words) as rp:
+        # function might return None values
+        if rp:
+            patterns = patterns + rp
+        else:
+            logger.warning("One or more words have wrong type")
 
     # Get JSON as dictionary
     data = convert_json(data_path)
@@ -119,13 +136,21 @@ def clean(
     recipe_ings = []
 
     logger.info("Reformatting %i records", len(data))
-    for recipe in data:
-        cuisine = recipe[cuisine_attr]
-        ingredients = recipe[ingredients_attr]
+    try:
+        for recipe in data:
+            cuisine = recipe[cuisine_attr]
+            ingredients = recipe[ingredients_attr]
 
-        recipe_ings = recipe_ings + [
-            (x, cuisine) for x in clean_ingr(ingredients, patterns)
-        ]
-
+            recipe_ings = recipe_ings + [
+                (x, cuisine) for x in clean_ingr(ingredients, patterns)
+            ]
+    except KeyError:
+        logger.error(
+            "Attributes %s or %s not found in input file at %s",
+            cuisine_attr,
+            ingredients_attr,
+            data_path,
+        )
+    # Convert to dataframe
     df = pd.DataFrame(data=recipe_ings, columns=[ingredient_col, cuisine_col])
     return df
