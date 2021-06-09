@@ -7,7 +7,7 @@ import json
 import pandas as pd
 
 from src.data_model import create_db
-from src.processing.clean import clean
+from src.processing.clean import clean, convert_json
 from src.processing.features import generate_train_df
 from src.recsys.model import RecipeModel
 from src.recsys.evaluate import generate_splits, get_accuracy
@@ -17,7 +17,7 @@ from config.flaskconfig import SQLALCHEMY_DATABASE_URI
 
 # Set logger configuration, prints to stdout
 logging.basicConfig(
-    format="%(asctime)s %(name)-12s %(levelname)-8s " "%(message)s",
+    format="%(asctime)s %(name)-30s %(levelname)-8s " "%(message)s",
     level=logging.DEBUG,
 )
 
@@ -112,7 +112,8 @@ if __name__ == "__main__":
         if args.step == "clean":
             logger.debug("Attempting clean")
             # clouds.data -> clean.csv
-            output = clean(args.input, **config["processing"]["clean"])
+            data_dict = convert_json(args.input)
+            output = clean(data_dict, **config["processing"]["clean"])
             logger.info("Successfully cleaned input file %s, attempting save")
             try:
                 if args.output is not None:
@@ -177,8 +178,11 @@ if __name__ == "__main__":
                 logger.info("Saving test set to %s", output_path)
 
             # Clean & featurize training set
+            data_dict = convert_json(
+                output_path + config["model"]["evaluate"]["trainset_path"]
+            )
             train = clean(
-                output_path + config["model"]["evaluate"]["trainset_path"],
+                data_dict,
                 **config["processing"]["clean"],
             )
             train = generate_train_df(
