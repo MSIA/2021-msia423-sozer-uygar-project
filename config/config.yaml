@@ -12,7 +12,7 @@ processing:
       - 'ounc'
       - 'fresh'
     cuisine_attr: "cuisine"
-    ingredients_attr": "ingredients"
+    ingredients_attr: "ingredients"
     cuisine_col: "cuisine"
     ingredient_col: "ingredient"
   features:
@@ -35,5 +35,4 @@ model:
     splits:
       random_state: 666
       train_size: 0.8
-      
 
