@@ -13,12 +13,12 @@ pandas = "*"
 pyyaml = "*"
 flask = "*"
 flask-sqlalchemy = "*"
+pytest= "*"
 
 [dev-packages]
 awscli = "*"
 ipython = "*"
 flake8 = "*"
-pytest= "*"
 black = "*"
 jupyterlab = "*"
 ipykernel = "*"
