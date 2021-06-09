@@ -37,6 +37,7 @@ def upload(bucketname, filename, datapath):
 
     s3 = boto3.resource("s3")
     bucket = s3.Bucket(bucketname)
+    logger.info("Currently connected to %s", bucketname)
 
     # Upload file to S3
     try:
@@ -63,7 +64,8 @@ def download(bucketname=None, path_from=None, path_to=None, s3path=None):
 
     s3 = boto3.resource("s3")
     bucket = s3.Bucket(bucketname)
-
+    logger.info("Currently connected to %s", bucketname)
+    
     # Download file from S3
     try:
         bucket.download_file(path_from, path_to)
