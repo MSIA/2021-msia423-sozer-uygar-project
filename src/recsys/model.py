@@ -7,9 +7,21 @@ logger = logging.getLogger(__name__)
 
 
 def mean_center(row):
-    """Subtract mean from each element."""
-    avg = row[:-1].mean()
-    row[:-1] = row[:-1] - avg
+    """Subtract mean from each element in a row
+
+    Args:
+        row (`pandas.Series`): row item representing
+        1 unique ingredient
+
+    Returns:
+        `pandas.Series`: mean centered vector
+    """
+    try:
+        avg = row[:-1].mean()
+        row[:-1] = row[:-1] - avg
+    except IndexError:
+        logger.error("Supplied empty Series %s", row.name)
+        return row
 
     return row
 
@@ -32,8 +44,19 @@ def normalize(col, scale=1, exclude=None):
     if col.name in exclude:
         return col
 
-    avg = col.mean()
-    total = col.sum()
+    try:
+        avg = col.mean()
+        total = col.sum()
+    except ValueError:
+        logger.warning(
+            "Invalid value detected in column %s, returning as is", col.name
+        )
+        return col
+    except TypeError:
+        logger.warning(
+            "Invalid value detected in column %s, returning as is", col.name
+        )
+        return col
 
     col = scale * (col - avg) / total
     return col
@@ -41,11 +64,38 @@ def normalize(col, scale=1, exclude=None):
 
 def softmax(raw):
     """Get relative percentages of a probability vector of
-    mutually exclusive classes"""
-    return np.e ** raw / np.sum(np.e ** raw)
+    mutually exclusive classes
+
+    Args:
+        raw (`pandas.Series`): Vector of probabilities
+
+    Returns:
+        `pandas.Series`: raw probabilites transformed to
+        add up to 1.0
+    """
+    try:
+        softmax = np.e ** raw / np.sum(np.e ** raw)
+    except TypeError:
+        logger.error("Invalid vector type, contains non-numeric")
+
+    return softmax
 
 
 class RecipeModel:
+    """Combined predictive and recommender model for detecting cuisine
+    type from lists of ingredients, as well as recommendations for
+    extending the lists with cuisine-specific items.
+
+    Class methods:
+    - train()
+    - predict()
+    - recommend()
+    - predict_and_recommend()
+    
+    Training dataframes:
+    - RecipeModel.rec_train (`pandas.DataFrame`)
+    - RecipeModel.pred_train (`pandas.DataFrame`)
+    """
     def __init__(self, num_guesses=3, num_ingredients=5):
         # Initialize train sets for predictions and recommendations
         self.rec_train = None
@@ -129,18 +179,24 @@ class RecipeModel:
         """Get predictions from a list of ingredients as a list.
         Number of preds configured in init."""
         df = self.rec_train
-        
+
         try:
             if selected:
+                # attempt dropping selected rows
                 df = df.drop(labels=selected, axis=0)
                 logger.info(
                     "Dropped a total of %i rows named: %s",
                     len(self.rec_train) - len(df),
                     selected,
                 )
-        except:
-            pass
+        except KeyError:
+            logger.error(
+                "One or more of selected ingredients \
+            %s not found in database.",
+                selected,
+            )
 
+        # Reorder list to return top n rows
         ordered = df.loc[:, cuisine].sort_values(ascending=False)
         logger.debug("Returning %i recommendations", self.num_ingredients)
 
