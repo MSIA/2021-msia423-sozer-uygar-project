@@ -17,6 +17,7 @@ def mean_center(row):
         `pandas.Series`: mean centered vector
     """
     try:
+        # Skip sum column
         avg = row[:-1].mean()
         row[:-1] = row[:-1] - avg
     except IndexError:
@@ -41,8 +42,9 @@ def normalize(col, scale=1, exclude=None):
         `pandas.Series`: Normalized column
     """
     # If name matches exclude list, return column as is
-    if col.name in exclude:
-        return col
+    if exclude:
+        if col.name in exclude:
+            return col
 
     try:
         avg = col.mean()
@@ -75,10 +77,9 @@ def softmax(raw):
     """
     try:
         softmax = np.e ** raw / np.sum(np.e ** raw)
+        return softmax
     except TypeError:
         logger.error("Invalid vector type, contains non-numeric")
-
-    return softmax
 
 
 class RecipeModel:
