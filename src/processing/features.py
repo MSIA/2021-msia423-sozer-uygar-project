@@ -16,6 +16,7 @@ def ingr_sum(df):
         `int`: Sum of all columns
     """
     try:
+        # Skip ingredient name column
         return df.iloc[:, 1:].sum(axis=1, skipna=True)
     except TypeError:
         logger.error("One or more columns containing strings")

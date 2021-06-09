@@ -17,11 +17,15 @@ def parse_s3(s3path):
     Returns:
         str, str: Bucket name and file path
     """
-    regex = r"s3://([\w._-]+)/([\w./_-]+)"
+    try:
+        regex = r"s3://([\w._-]+)/([\w./_-]+)"
 
-    m = re.match(regex, s3path)
-    s3bucket = m.group(1)
-    s3path = m.group(2)
+        m = re.match(regex, s3path)
+        s3bucket = m.group(1)
+        s3path = m.group(2)
+    except TypeError:
+        logger.error("invalid type URI provided for S3")
+        return None, None
 
     return s3bucket, s3path
 
@@ -65,7 +69,7 @@ def download(bucketname=None, path_from=None, path_to=None, s3path=None):
     s3 = boto3.resource("s3")
     bucket = s3.Bucket(bucketname)
     logger.info("Currently connected to %s", bucketname)
-    
+
     # Download file from S3
     try:
         bucket.download_file(path_from, path_to)
