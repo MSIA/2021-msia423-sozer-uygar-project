@@ -28,7 +28,7 @@ def clean_ingr(items, patterns, verbose=False):
         # Check for every pattern
         for pattern in patterns:
             # if match found, replace with empty str
-            if re.match(pattern, item):
+            if re.search(pattern, item):
                 try:
                     fixed = re.sub(pattern, "", item)
                 except TypeError:
@@ -90,7 +90,7 @@ def convert_json(data_path):
 
 
 def clean(
-    data_path,
+    data_dictionary,
     patterns,
     remove_words,
     cuisine_attr="cuisine",
@@ -104,7 +104,7 @@ def clean(
     any words specified.
 
     Args:
-        data_path (str)): Path to JSON file (raw)
+        data_dictionary (dict)): Input data to be cleaned
         patterns (array-like): List of regular expression patterns to
         remove from ingredient names
         remove_words (array-like): Any words to be removed (up until and
@@ -130,14 +130,11 @@ def clean(
     else:
         logger.warning("One or more words have wrong type")
 
-    # Get JSON as dictionary
-    data = convert_json(data_path)
-
     recipe_ings = []
 
-    logger.info("Reformatting %i records", len(data))
+    logger.info("Reformatting %i records", len(data_dictionary))
     try:
-        for recipe in data:
+        for recipe in data_dictionary:
             cuisine = recipe[cuisine_attr]
             ingredients = recipe[ingredients_attr]
 
@@ -146,10 +143,9 @@ def clean(
             ]
     except KeyError:
         logger.error(
-            "Attributes %s or %s not found in input file at %s",
+            "Attributes %s or %s not found in input dictionary",
             cuisine_attr,
             ingredients_attr,
-            data_path,
         )
     # Convert to dataframe
     df = pd.DataFrame(data=recipe_ings, columns=[ingredient_col, cuisine_col])
