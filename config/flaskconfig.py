@@ -6,6 +6,7 @@ APP_NAME = "CuisineHelpr"
 SQLALCHEMY_TRACK_MODIFICATIONS = True
 HOST = "0.0.0.0"
 SQLALCHEMY_ECHO = False  # If true, SQL for queries made will be printed
+REDO = False
 
 # Components of connection string
 DB_HOST = os.environ.get('MYSQL_HOST')
@@ -23,6 +24,7 @@ if SQLALCHEMY_DATABASE_URI is not None:
 # If environment variables are not set, default to sqlite
 elif DB_HOST is None:
     SQLALCHEMY_DATABASE_URI = 'sqlite:///data/kitchen.db'
+    REDO = True
 # If no string is provided, and env variables are set, construct string
 else:
     SQLALCHEMY_DATABASE_URI = ('{dialect}://{user}:{pw}@{host}:{port}/{db}'.
@@ -32,3 +34,4 @@ else:
                                       host=DB_HOST,
                                       port=DB_PORT,
                                       db=DATABASE))
+                                      
