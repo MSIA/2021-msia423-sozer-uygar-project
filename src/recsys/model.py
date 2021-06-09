@@ -46,18 +46,18 @@ def softmax(raw):
 
 
 class RecipeModel:
-    def __init__(self, NUM_GUESSES=3, NUM_INGREDIENTS=5):
+    def __init__(self, num_guesses=3, num_ingredients=5):
         # Initialize train sets for predictions and recommendations
         self.rec_train = None
         self.pred_train = None
 
         # Response config
-        self.num_guesses = NUM_GUESSES
-        self.num_ingredients = NUM_INGREDIENTS
+        self.num_guesses = num_guesses
+        self.num_ingredients = num_ingredients
 
         self.sum_column = None
 
-    def train(self, df, SCALE_CONST, SUM_COLUMN):
+    def train(self, df, scale_const, sum_column):
         """Train RecipeModel. Computes and binds separate train sets for
         recommendations and predictions.
 
@@ -69,24 +69,39 @@ class RecipeModel:
             importance measures are too small
             SUM_COLUMN (String): Name of column representing sum of each row
         """
-        self.sum_column = SUM_COLUMN
+        self.sum_column = sum_column
 
         # Assign train set
         self.pred_train = df.apply(
-            normalize, exclude=[self.sum_column], scale=SCALE_CONST, axis=0
+            normalize, exclude=[self.sum_column], scale=scale_const, axis=0
         ).apply(mean_center, raw=True, axis=1)
-        logger.info("Trained for predictions")
+        logger.info(
+            "Trained for predictions, df length %i", len(self.pred_train)
+        )
 
         self.rec_train = df.drop(self.sum_column, axis=1).apply(
             mean_center, raw=True, axis=0
         )
-        logger.info("Trained for predictions")
+        logger.info(
+            "Trained for recommendations, df length %i", len(self.rec_train)
+        )
 
         logger.info("Training complete")
 
     def predict(self, ingredients, verbose=False):
-        """Get predictions from a list of ingredients as a list.
-        Number of preds configured in init."""
+        """Return predictions from the trained dataframe.
+         Model makes no decisions influenced by
+        ingredients that do not exist in the trained df.
+
+        Args:
+            ingredients (array-like): List of selected ingredients that
+            the prediction is requested for.
+            verbose (bool, optional): If True, prints out warning message
+            indicating when ingredients are not found. Defaults to False.
+
+        Returns:
+            [type]: [description]
+        """
         df = self.pred_train
 
         try:
@@ -107,7 +122,6 @@ class RecipeModel:
         calc = calc.drop(self.sum_column, axis=1).sum(axis=0)
 
         ordered = softmax(calc).sort_values(ascending=False)
-        logger.info(softmax(calc))
 
         return ordered[: self.num_guesses]
 
@@ -115,11 +129,20 @@ class RecipeModel:
         """Get predictions from a list of ingredients as a list.
         Number of preds configured in init."""
         df = self.rec_train
-
-        if selected:
-            df = df.drop(labels=selected, axis=0)
+        
+        try:
+            if selected:
+                df = df.drop(labels=selected, axis=0)
+                logger.info(
+                    "Dropped a total of %i rows named: %s",
+                    len(self.rec_train) - len(df),
+                    selected,
+                )
+        except:
+            pass
 
         ordered = df.loc[:, cuisine].sort_values(ascending=False)
+        logger.debug("Returning %i recommendations", self.num_ingredients)
 
         return list((ordered[: self.num_ingredients]).index)
 
@@ -172,6 +195,6 @@ class RecipeModel:
             return recs
         else:
             # Non request mode displays
-            # {"cuisine":[ingredients], "cuisine":[ingredients]}
+            # {"cuisine":[ingredients], "cuisine":[ingredients]...}
             logger.debug("Returning standard type results")
             return dict(zip(pred_list, rec_list))
