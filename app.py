@@ -35,12 +35,20 @@ if app.config["REDO"]:
     logger.info("Deleted db schema %s", manager.db.engine)
     create_db(manager.db.engine)
     logger.info("Created db schema %s", manager.db.engine)
-    manager.session.execute(
-        sa_text("""TRUNCATE TABLE ingredients""").execution_options(
-            autocommit=True
+    if app.config["SQLITE"]:
+        manager.session.execute(
+            sa_text("""DELETE FROM ingredients""").execution_options(
+                autocommit=True
+            )
         )
-    )
-    logger.info("Deleted table content at %s", manager.db.engine)
+        logger.info("Deleted table content at %s", manager.db.engine)
+    else:
+        manager.session.execute(
+            sa_text("""TRUNCATE TABLE ingredients""").execution_options(
+                autocommit=True
+            )
+        )
+        logger.info("Deleted table content at %s", manager.db.engine)
     manager.add_to_db("data/full.csv")
     logger.info("Repopulated table at %s", manager.db.engine)
 
