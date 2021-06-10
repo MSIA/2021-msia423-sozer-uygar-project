@@ -7,9 +7,22 @@ logger = logging.getLogger(__name__)
 
 
 def mean_center(row):
-    """Subtract mean from each element."""
-    avg = row[:-1].mean()
-    row[:-1] = row[:-1] - avg
+    """Subtract mean from each element in a row
+
+    Args:
+        row (`pandas.Series`): row item representing
+        1 unique ingredient
+
+    Returns:
+        `pandas.Series`: mean centered vector
+    """
+    try:
+        # Skip sum column
+        avg = row[:-1].mean()
+        row[:-1] = row[:-1] - avg
+    except IndexError:
+        logger.error("Supplied empty Series %s", row.name)
+        return row
 
     return row
 
@@ -29,11 +42,23 @@ def normalize(col, scale=1, exclude=None):
         `pandas.Series`: Normalized column
     """
     # If name matches exclude list, return column as is
-    if col.name in exclude:
-        return col
+    if exclude:
+        if col.name in exclude:
+            return col
 
-    avg = col.mean()
-    total = col.sum()
+    try:
+        avg = col.mean()
+        total = col.sum()
+    except ValueError:
+        logger.warning(
+            "Invalid value detected in column %s, returning as is", col.name
+        )
+        return col
+    except TypeError:
+        logger.warning(
+            "Invalid value detected in column %s, returning as is", col.name
+        )
+        return col
 
     col = scale * (col - avg) / total
     return col
@@ -41,23 +66,50 @@ def normalize(col, scale=1, exclude=None):
 
 def softmax(raw):
     """Get relative percentages of a probability vector of
-    mutually exclusive classes"""
-    return np.e ** raw / np.sum(np.e ** raw)
+    mutually exclusive classes
+
+    Args:
+        raw (`pandas.Series`): Vector of probabilities
+
+    Returns:
+        `pandas.Series`: raw probabilites transformed to
+        add up to 1.0
+    """
+    try:
+        softmax = np.e ** raw / np.sum(np.e ** raw)
+        return softmax
+    except TypeError:
+        logger.error("Invalid vector type, contains non-numeric")
 
 
 class RecipeModel:
-    def __init__(self, NUM_GUESSES=3, NUM_INGREDIENTS=5):
+    """Combined predictive and recommender model for detecting cuisine
+    type from lists of ingredients, as well as recommendations for
+    extending the lists with cuisine-specific items.
+
+    Class methods:
+    - train()
+    - predict()
+    - recommend()
+    - predict_and_recommend()
+
+    Training dataframes:
+    - RecipeModel.rec_train (`pandas.DataFrame`)
+    - RecipeModel.pred_train (`pandas.DataFrame`)
+    """
+
+    def __init__(self, num_guesses=3, num_ingredients=5):
         # Initialize train sets for predictions and recommendations
         self.rec_train = None
         self.pred_train = None
 
         # Response config
-        self.num_guesses = NUM_GUESSES
-        self.num_ingredients = NUM_INGREDIENTS
+        self.num_guesses = num_guesses
+        self.num_ingredients = num_ingredients
 
         self.sum_column = None
 
-    def train(self, df, SCALE_CONST, SUM_COLUMN):
+    def train(self, df, scale_const, sum_column):
         """Train RecipeModel. Computes and binds separate train sets for
         recommendations and predictions.
 
@@ -69,24 +121,39 @@ class RecipeModel:
             importance measures are too small
             SUM_COLUMN (String): Name of column representing sum of each row
         """
-        self.sum_column = SUM_COLUMN
+        self.sum_column = sum_column
 
         # Assign train set
         self.pred_train = df.apply(
-            normalize, exclude=[self.sum_column], scale=SCALE_CONST, axis=0
+            normalize, exclude=[self.sum_column], scale=scale_const, axis=0
         ).apply(mean_center, raw=True, axis=1)
-        logger.info("Trained for predictions")
+        logger.info(
+            "Trained for predictions, df length %i", len(self.pred_train)
+        )
 
         self.rec_train = df.drop(self.sum_column, axis=1).apply(
             mean_center, raw=True, axis=0
         )
-        logger.info("Trained for predictions")
+        logger.info(
+            "Trained for recommendations, df length %i", len(self.rec_train)
+        )
 
         logger.info("Training complete")
 
     def predict(self, ingredients, verbose=False):
-        """Get predictions from a list of ingredients as a list.
-        Number of preds configured in init."""
+        """Return predictions from the trained dataframe.
+         Model makes no decisions influenced by
+        ingredients that do not exist in the trained df.
+
+        Args:
+            ingredients (array-like): List of selected ingredients that
+            the prediction is requested for.
+            verbose (bool, optional): If True, prints out warning message
+            indicating when ingredients are not found. Defaults to False.
+
+        Returns:
+            [type]: [description]
+        """
         df = self.pred_train
 
         try:
@@ -107,7 +174,6 @@ class RecipeModel:
         calc = calc.drop(self.sum_column, axis=1).sum(axis=0)
 
         ordered = softmax(calc).sort_values(ascending=False)
-        logger.info(softmax(calc))
 
         return ordered[: self.num_guesses]
 
@@ -116,10 +182,25 @@ class RecipeModel:
         Number of preds configured in init."""
         df = self.rec_train
 
-        if selected:
-            df = df.drop(labels=selected, axis=0)
+        try:
+            if selected:
+                # attempt dropping selected rows
+                df = df.drop(labels=selected, axis=0)
+                logger.info(
+                    "Dropped a total of %i rows named: %s",
+                    len(self.rec_train) - len(df),
+                    selected,
+                )
+        except KeyError:
+            logger.error(
+                "One or more of selected ingredients \
+            %s not found in database.",
+                selected,
+            )
 
+        # Reorder list to return top n rows
         ordered = df.loc[:, cuisine].sort_values(ascending=False)
+        logger.debug("Returning %i recommendations", self.num_ingredients)
 
         return list((ordered[: self.num_ingredients]).index)
 
@@ -172,6 +253,6 @@ class RecipeModel:
             return recs
         else:
             # Non request mode displays
-            # {"cuisine":[ingredients], "cuisine":[ingredients]}
+            # {"cuisine":[ingredients], "cuisine":[ingredients]...}
             logger.debug("Returning standard type results")
             return dict(zip(pred_list, rec_list))

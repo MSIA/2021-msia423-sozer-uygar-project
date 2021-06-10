@@ -1,9 +1,9 @@
 processing:
   clean:
-    PATTERNS:
+    patterns:
       - '^\(.*?\) '
       - ',.*$'
-    REMOVE_WORDS:
+    remove_words:
       - 'low-fat'
       - 'lowfat'
       - 'low fat'
@@ -11,22 +11,31 @@ processing:
       - 'lb\.'
       - 'ounc'
       - 'fresh'
+    cuisine_attr: "cuisine"
+    ingredients_attr: "ingredients"
+    cuisine_col: "cuisine"
+    ingredient_col: "ingredient"
   features:
-    DROP_ROWS:
+    drop_rows:
       - 'salt'
       - 'water'
       - 'sugar'
       - 'olive oil'
       - 'garlic cloves'
-    MIN_PREVALENCE: 100
+    min_prevalence: 100
+    sum_column: 'ingr_sum'
 model:
   initialize:
-    NUM_GUESSES: 3
-    NUM_INGREDIENTS: 5
+    num_guesses: 3
+    num_ingredients: 5
   train:
-    SCALE_CONST: 1000
-    SUM_COLUMN: 'ingr_sum'
+    scale_const: 1000
+    sum_column: 'ingr_sum'
   evaluate:
     splits:
+      random_state: 666
       train_size: 0.8
-
+    evaluate_dir: '/evaluate/'
+    trainset_path: 'train.json'
+    testset_path: 'test.json'
+    result_path: 'result.txt'
