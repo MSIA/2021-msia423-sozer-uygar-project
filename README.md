@@ -103,28 +103,35 @@ the link to the recipe provided)
 ```
 
 
-## Running the app
-### 1. Initialize Docker
+# Running the app
+## Initialize Docker
 
-This project uses Docker containers to ensure OS compatibility. At the root of the repository, run:
+This project uses Docker containers to ensure OS compatibility. There are 3 separate Dockerfiles for:
+
+* Data acquisition and upload
+* Model pipeline
+* Web application
+
+At the root of the repository, run:
 
 ```bash
-docker build -t <IMAGE-NAME> .
+make image_upload
+make image_pipeline
+make image_app
 ```
 
-replacing `<IMAGE-NAME>` with desired alias.
+for each of the Docker functionalities respectively.
 
 Note: Windows users may need to add `winpty` before running Docker commands.
 
-### 2. Configure database
 
-#### Obtain raw data
+## Obtain raw data
 
 The raw data used in this project is available on [Kaggle](https://www.kaggle.com/kaggle/recipe-ingredients-dataset) as a `JSON` file. In order to comply with Kaggle policies, I encourage you to log-in to Kaggle with your own credentials and place `train.json` in the `data/` folder.
 
 I provided a copy of this file in this repository.
 
-#### Upload raw data on AWS S3
+## Upload raw data on AWS S3
 
 In order to interact with Amazon Web Services through the console, run the following two lines:
 
@@ -136,63 +143,77 @@ export AWS_SECRET_ACCESS_KEY=<your-secret-access-key>
 filling in with your pre-approved credentials. Then run:
 
 ```bash
-docker run \
-    -e AWS_ACCESS_KEY_ID \
-    -e AWS_SECRET_ACCESS_KEY \
-    <IMAGE-NAME> upload <name-of-bucket> <filename>
+make upload_data
 ```
 
-filling in your S3 bucket name (without `S3://`) and the name you want your file to appear as on S3.
 
-This command has an optional argument
+For any changes in S3 bucket name, file key name on S3 or local filepath, see `Makefile`.
+
+By default, the raw data lives in `data/train.json`.
+
+## Model pipeline
+
+To run the entirety of the model pipeline, run:
 
 ```bash
-    -d <data-path>
+make model
 ```
 
-where you can configure another location for the raw data file. By default, it is `data/train.json`.
+By default, this will invoke the special Dockerfile for the model pipeline, mount the root of the repository to the Docker image and copy all files to the `data/` folder, including evaluation results.
 
-#### Create the database 
+For each individual step, you can run:
+
+```bash
+make cleaned
+make features
+```
+
+Please note that `features` command has file dependencies on `cleaned`, which has dependencies on the raw data file downloaded from S3.
+
+
+## Create the database 
 
 To create the database in the location configured in `config/dbconfig.py`, run: 
 
 ```bash
-docker run <IMAGE-NAME> create
+make localdb
 ```
 
-By default, this command creates a database locally at `sqlite:///data/kitchen.db` **within the Docker container**. If you would like to check the database locally, the command that is run is as follows:
+By default, this command creates a database locally at `sqlite:///data/kitchen.db`.
+
+Alternatively, you might want to specify a MySQL server to create the database on. For this, please set MySQL URI as an environment variable:
 
 ```bash
-python run.py create
-```
-making sure that your local environment (or `venv`) has all the required packages listed in `requirements.txt` at the root of this repository.
-
-Alternatively, you might want to specify a MySQL server to create the database on. For this, set MySQL configurations as environment variables:
-
-```bash
-export MYSQL_HOST=<host-name>
-export MYSQL_PORT=<port-no>
-export MYSQL_USER=<db-user>
-export MYSQL_PASSWORD=<db-password>
-export MYSQL_DATABASE=<database-name>
+export SQLALCHEMY_DATABASE_URI="{dialect}://{username}:{password}@{hostname}/{database_name}"
 ```
 
 and run:
 
 ```bash
-docker run \
-    -e MYSQL_HOST \
-    -e MYSQL_PORT \
-    -e MYSQL_USER \
-    -e MYSQL_PASSWORD \
-    -e MYSQL_DATABASE \
-    <IMAGE-NAME> create
+make create
 ```
 
-`create` command has an optional argument:
+## Web app
+
+Web app will run on Docker image created by the `make image_app`. Once that image is created, simply run:
 
 ```bash
-    -s <engine-string>
+make app
 ```
 
-where you can enter your own formatted engine string. Otherwise, the program will try to format the engine string using the environment variables shown above.
+which will automatically boot up app image with all data cleaning and featurizing artifacts, fill in any missing files and start web server at port `5000`.
+
+You can access the website at:
+```bash
+http://localhost:5000
+```
+
+To kill the web app, open up another terminal instance and run:
+```bash
+docker stop webapp
+```
+
+Note: If you would like to make sure app image starts by downloading the raw data from S3, please delete all files in the `data/` folder before re-making the image with the command:
+```bash
+make image_app
+```
