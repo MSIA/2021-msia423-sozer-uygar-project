@@ -99,10 +99,10 @@ if __name__ == "__main__":
     if sp_used == "upload":
         logger.debug("Upload option invoked")
         upload(args.bucket_name, args.file_name, args.data_path)
-    if sp_used == "download":
+    elif sp_used == "download":
         logger.debug("Download option invoked")
         download(s3path=args.s3path, path_to=args.path_to)
-    if sp_used == "create":
+    elif sp_used == "create":
         logger.debug("Create database")
         create_db(args.sqlalchemy_uri)
     elif sp_used == "pipeline":
