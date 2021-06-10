@@ -12,7 +12,7 @@ image_upload:
 	docker build -t $(upload_imagename) -f Dockerfile_upload .
 
 upload_data: data/raw.json
-	docker run --mount type=bind,source="$(shell pwd)",target=/app/ -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY $(upload_imagename) run.py upload 2021-msia423-sozer-uygar raw.json data/raw.json
+	docker run --mount type=bind,source="$(shell pwd)",target=/app/ -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY $(upload_imagename) run.py upload --bucket_name=2021-msia423-sozer-uygar --file_name=raw.json --data_path=data/raw.json
 
 create:
 	docker run --mount type=bind,source="$(shell pwd)",target=/app/ -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e SQLALCHEMY_DATABASE_URI $(upload_imagename) run.py create
@@ -46,6 +46,6 @@ test:
 all: data/raw.json data/clean.csv data/full.csv model
 
 app:
-	docker run -p 5000:5000 -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e SQLALCHEMY_DATABASE_URI $(app_imagename)
+	docker run -p 5000:5000 -e AWS_ACCESS_KEY_ID -e AWS_SECRET_ACCESS_KEY -e SQLALCHEMY_DATABASE_URI --name webapp $(app_imagename)
 
 .PHONY: image_pipeline image_app image_upload raw cleaned features reset test model localdb all upload_data create app
