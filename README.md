@@ -88,7 +88,7 @@ the link to the recipe provided)
 │
 ├── copilot                         <- AWS ECS deployment configurations
 ├── deliverables                    <- Final presentation & demo
-├── notebooks                       <- Jupyter notebooks used during development (archived)
+├── notebooks                       <- Jupyter notebooks used during development (archived - see develop branch)
 ├── src
 │   ├── processing                  <- Module for data processing
 │   │   ├── __init__.py                   
@@ -170,7 +170,7 @@ By default, the raw data lives in `data/train.json`.
 To run the entirety of the model pipeline, run:
 
 ```bash
-make model
+make all
 ```
 
 By default, this will invoke the special Dockerfile for the model pipeline, mount the root of the repository to the Docker image and copy all files to the `data/` folder, including evaluation results.
@@ -180,6 +180,7 @@ For each individual step, you can run:
 ```bash
 make cleaned
 make features
+make model
 ```
 
 Please note that `features` command has file dependencies on `cleaned`, which has dependencies on the raw data file downloaded from S3.

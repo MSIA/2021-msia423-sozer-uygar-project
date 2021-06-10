@@ -35,7 +35,7 @@ model:
     splits:
       random_state: 666
       train_size: 0.8
-    evaluate_dir: '/evaluate/'
+    evaluate_dir: 'evaluate/'
     trainset_path: 'train.json'
     testset_path: 'test.json'
     result_path: 'result.txt'
