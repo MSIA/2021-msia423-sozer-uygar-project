@@ -88,7 +88,7 @@ the link to the recipe provided)
 │
 ├── copilot                         <- AWS ECS deployment configurations
 ├── deliverables                    <- Final presentation & demo
-├── notebooks                       <- Jupyter notebooks used during development (archived)
+├── notebooks                       <- Jupyter notebooks used during development (archived - see develop branch)
 ├── src
 │   ├── processing                  <- Module for data processing
 │   │   ├── __init__.py                   
