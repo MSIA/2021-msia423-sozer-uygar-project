@@ -58,50 +58,64 @@ the link to the recipe provided)
 
 # Repository
 
-<!-- toc -->
-
 * [MSiA 423 Project - CuisineHelpr](#msia-423-project---cuisinehelpr)
    * [Vision](#vision)
    * [Mission](#mission)
    * [Success criteria](#success-criteria)
 * [Repository](#repository)
    * [Directory structure](#directory-structure)
-   * [Running the app](#running-the-app)
-      * [1. Initialize Docker](#1-initialize-docker)
-      * [2. Configure database](#2-configure-database)
-         * [Obtain raw data](#obtain-raw-data)
-         * [Upload raw data on AWS S3](#upload-raw-data-on-aws-s3)
-         * [Create the database](#create-the-database)
-<!-- tocstop -->
+* [Running the app](#running-the-app)
+   * [Initialize Docker](#initialize-docker)
+   * [Obtain raw data](#obtain-raw-data)
+   * [Upload raw data on AWS S3](#upload-raw-data-on-aws-s3)
+   * [Model pipeline](#model-pipeline)
+   * [Create the database](#create-the-database)
+   * [Web app](#web-app)
 
 ## Directory structure 
 
 ```
-├── config                          <- Folder for configuration files
-│   ├── logging                     <- Logging configurations
-│   └── dbconfig.py                 <- Configurations for database management
-├── data                            <- Data files for the project
-│   ├── external
-│   ├── sample
-│   └── train.json                  <- Project dataset, obtained from Kaggle (see below)
-├── docs
-├── notebooks                       <- Jupyter notebooks
-│   ├── archive                     <- Develop notebooks no longer being used
-│   ├── deliver                     <- Notebooks shared with others / in final state
-│   └── develop                     <- Current notebooks being used in development.
-├── src                             <- Project source code
-│   ├── __init__.py
-│   ├── data_model.py               <- Defines data model for the relational DB used
-│   └── upload_data.py              <- Lands raw data on AWS S3
-├── README.md                       <- You are here
-├── test                            <- Unit tests for source modules
-├── Dockerfile
+├── app                             <- Files for the web application
+│   ├── static                      <- CSS, Javascript, images
+│   ├── templates                   <- HTML templates operated on by Flask
+│   ├── Dockerfile_app              <- Docker container creation for web app
+│   └── boot.sh                     <- Shell script on Docker boot up 
+│
+├── config                          
+│   ├── logging                     <- Logger configuration
+│   ├── config.yaml                 <- Reproducible model documentation
+│   └── flaskconfig.py              <- Configurations for database management
+│
+├── copilot                         <- AWS ECS deployment configurations
+├── deliverables                    <- Final presentation & demo
+├── notebooks                       <- Jupyter notebooks used during development (archived)
+├── src
+│   ├── processing                  <- Module for data processing
+│   │   ├── __init__.py                   
+│   │   ├── clean.py                <- Data cleaning
+│   │   └── features.py             <- Feature/training dataframe generation
+│   │
+│   ├── recsys                      <- Module for predictive model & recommender system
+│   │   ├── __init__.py             
+│   │   ├── evaluate.py             <- Model evaluation
+│   │   └── model.py                <- Defines machine learning model class
+│   │
+│   ├── data_model.py               <- Defines data model for the relational DB used
+│   └── dataio.py                   <- Functions for data I/O through AWS S3
+│
+├── test                            <- Unit tests
+│
+├── Dockerfile                      <- Dockerfile for container to run ML model pipeline
+├── Dockerfile_upload               <- Dockerfile for container to interact with S3
+├── Makefile                        <- Make directives
+├── Makefile_app                    <- Make directives for web app container (DO NOT USE)
 ├── Pipfile                         <- pipenv dependencies
-├── Pipfile.lock                    <- pipenv dependency resolution file
+├── Pipfile.lock                    <- pipenv dependencies - absolute 
+├── README.md                       <- You are here
+├── app.py                          <- Wrapper for Flask app
 ├── requirements.txt                <- Required packages for project
 └── run.py                          <- Orchestration script
 ```
-
 
 # Running the app
 ## Initialize Docker
